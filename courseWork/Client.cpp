@@ -4,6 +4,12 @@
 #include <string>
 #include <vector>
 
+using namespace Role;
+
+inline void printSeparator() {
+    cout << "+-------------------------------------------+" << endl;
+}
+
 void madeAppointment(shared_ptr<Client>& currentClient);
 
 void Client::showServices() {
@@ -65,14 +71,14 @@ void Client::makeAppointment(const string& login, vector<shared_ptr<Service>>& s
 }
 
 void Client::editProfile() {
-    cout << "+-------------------------------------------+\n";
+    printSeparator();
     cout << "|                 EDIT MENU                 |\n";
-    cout << "+-------------------------------------------+\n";
+    printSeparator();
     cout << "| 1 - Name                                 |\n";
     cout << "| 2 - Surname                              |\n";
     cout << "| 3 - Date of birth                        |\n";
     cout << "| 0 - Exit                                 |\n";
-    cout << "+-------------------------------------------+\n";
+    printSeparator();
 
     int choice;
     cout << "Your choice: ";
@@ -87,7 +93,7 @@ void Client::editProfile() {
     switch (choice) {
     case 1: {
         string newName;
-        cout << "+-------------------------------------------+\n";
+        printSeparator();
         cout << "Enter new name: ";
         cin >> ws; 
         getline(cin, newName);
@@ -96,7 +102,7 @@ void Client::editProfile() {
     }
     case 2: {
         string newSurname;
-        cout << "+-------------------------------------------+\n";
+        printSeparator();
         cout << "Enter new surname: ";
         cin >> ws; 
         getline(cin, newSurname);
@@ -105,16 +111,16 @@ void Client::editProfile() {
     }
     case 3: {
         Data newBirthday;
-        cout << "+-------------------------------------------+\n";
+        printSeparator();
         cout << "Enter new date of birth (dd mm yyyy): ";
         cin >> newBirthday;  
         setBirthday(newBirthday);
         break;
     }
     case 0:
-        cout << "+-------------------------------------------+\n";
+        printSeparator();
         cout << "Exiting profile editing.\n";
-        cout << "+-------------------------------------------+\n";
+        printSeparator();
         return;
     default:
         cout << "Invalid choice.\n";
@@ -123,15 +129,15 @@ void Client::editProfile() {
 }
 
 void Client::viewProfile() {
-    cout << "+-------------------------------------------+\n";
+    printSeparator();
     cout << "|               CLIENT PROFILE              |\n";
-    cout << "+-------------------------------------------+\n";
+    printSeparator();
     cout << "Login:    " << setw(20) << left << getLogin() << endl;
     cout << "Name:     " << setw(20) << left << getName() << endl;
     cout << "Surname:  " << setw(20) << left << getSurname() << endl;
     cout << "Phone:    " << setw(20) << left << getPhone() << endl;
     cout << "Birthday: " << setw(20) << left << getBirthday().toString() << endl;
-    cout << "+-------------------------------------------+\n";
+    printSeparator();
 }
 
 void Client::leaveReview() {

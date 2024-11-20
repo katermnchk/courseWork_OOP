@@ -1,4 +1,5 @@
 #include "Classes.h"
+using namespace Role;
 
 void SuperAdmin::addAdmin(shared_ptr<Admin> admin)
 {

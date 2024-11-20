@@ -1,4 +1,5 @@
 #include "Classes.h"
+#include <fstream>
 
 bool Data::isValidDate()
 {
@@ -12,3 +13,25 @@ bool Data::isValidDate()
 }
 
 
+bool checkLoginExists(const string& login)//проверка логина на уникальность
+{
+    ifstream file("logins.txt");
+    string line;
+    bool exists = false;
+
+    if (file.is_open()) {
+        while (getline(file, line)) {
+            if (line == login)
+            {
+                exists = true;
+                break;
+            }
+        }
+        file.close();
+    }
+    else
+    {
+        cout << "Error opening a file for reading" << endl;
+    }
+    return exists;
+}

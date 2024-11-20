@@ -128,6 +128,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Classes.h" />
+    <ClInclude Include="mainFunctions.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Admin.cpp" />
@@ -136,6 +137,7 @@
     <ClCompile Include="Check.cpp" />
     <ClCompile Include="Classes.cpp" />
     <ClCompile Include="Client.cpp" />
+    <ClCompile Include="files.cpp" />
     <ClCompile Include="SuperAdmin.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

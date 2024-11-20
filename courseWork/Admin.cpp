@@ -1,4 +1,5 @@
 #include "Classes.h"
+using namespace Role;
 
 void Admin::addService(shared_ptr<Service> service)
 {
