@@ -5,16 +5,10 @@
 #include <string>
 #include <conio.h>
 #include <iomanip> 
-//#include <openssl/sha.h> 
 
 using namespace std;
 using namespace Role;
 
-//string getPassword();
-////string hashPassword(const string& password);
-//Authentication authSystem;
-//string getPassword();
-//int mainMenu();
 
 void firstUsing() {
     Authentication authSystem;
@@ -62,6 +56,22 @@ bool Authentication::authenticate(const string& login, const string& password, s
     }
     return false;
 }
+
+//bool Authentication::login(const string& role, shared_ptr<Account>& currentAccount) {
+//    cout << "Enter login: ";
+//    string login;
+//    cin >> login;
+//    cout << "Enter password: ";
+//    string password = getPassword();
+//
+//    if (authenticate(login, password, currentAccount)) {
+//        cout << "\nSuccessfully logged in as " << role << "!\n";
+//        return true;
+//    }
+//    cout << "\nInvalid login or password.\n";
+//    return false;
+//}
+
 
 void Authentication::registerAccount(shared_ptr<Account> account, const string& login, const string& password) {
     if (dynamic_pointer_cast<SuperAdmin>(account)) {
@@ -114,78 +124,80 @@ void Authentication::approveAdminRegistration(const string& login, bool approve)
     cout << "Admin not found in approval list.\n";
 }
 
-void Authentication::loginMenu() {
+int Authentication::loginMenu() {
     string login, password;
     shared_ptr<Account> currentAccount;
-
-    while (true) {
-        cout << "Login: ";
-        cin >> login;
-        cout << "Password: ";
-        password = getPassword();
-
-        if (authenticate(login, password, currentAccount)) {
-            cout << "Login successful!\n";
-            if (auto client = dynamic_pointer_cast<Client>(currentAccount)) {
-                clientMenu(client);
-            }
-            else if (auto admin = dynamic_pointer_cast<Admin>(currentAccount)) {
-                adminMenu(admin);
-            }
-            else if (auto superAdmin = dynamic_pointer_cast<SuperAdmin>(currentAccount)) {
-                superAdminMenu(superAdmin);
-            }
-            break;
-        }
-        else {
-            cout << "Invalid login or password. Try again.\n";
-        }
+     int choice;
+    cout << "+-----------------------------------------------+\n";
+    cout << "|              Log in to the system              |\n";
+    cout << "+-----------------------------------------------+\n";
+    cout << "|1 - Log in as a regular user                   |\n";
+    cout << "|2 - Log in as an administrator                 |\n";
+    cout << "|3 - Log in as super administrator              |\n";
+    cout << "|4 - Exit to the main menu                      |\n";
+    cout << "+-----------------------------------------------+\n";
+    cout << "Your choice: ";
+    cin >> choice;
+    choice = checkMenuChoice(choice, 1, 4);
+    switch (choice) {
+    case 1:
+        system("cls");
+        return authenticateClient();
+        break;
+    case 2:
+        system("cls");
+        return authenticateAdmin();
+        break;
+    case 3:
+        cout << " Log in as super administrator ";
+        break;
+    case 4:
+        return mainMenu();
+    default:
+        cout << "Invalid choice.\n";
     }
+    cout << "\nНажмите на любую клавишу для продолжения...";
+    _getch();
+    system("cls");
+    return mainMenu();
 }
 
-string getPassword() {
-    cout << "Enter your password (min 6 characters): ";
-    string password;
+string getHiddenInput() {
+    string input;
     char ch;
     while (true) {
         ch = _getch();
-        if (ch == '\r') { // Enter
-            if (password.length() >= 6) break;
-            cout << "\nPassword too short. Please try again: ";
-            password.clear();
-        }
+        if (ch == '\r') break; // Enter
         else if (ch == '\b') { // Backspace
-            if (!password.empty()) {
+            if (!input.empty()) {
                 cout << "\b \b";
-                password.pop_back();
+                input.pop_back();
             }
         }
         else {
+            input.push_back(ch);
             cout << '*';
-            password.push_back(ch);
         }
     }
+    return input;
+}
+
+string getPassword() {
+    cout << "\nEnter your password (min 6 characters): ";
+    string password = getHiddenInput();
+    while (password.length() < 6) {
+        cout << "\nPassword too short. Please try again: ";
+        password = getHiddenInput();
+    }
+
     cout << "\nConfirm your password: ";
-    string confirmPassword;
-    while (true) {
-        confirmPassword.clear();
-        while (true) {
-            ch = _getch();
-            if (ch == '\r') break;
-            if (ch == '\b') {
-                if (!confirmPassword.empty()) {
-                    cout << "\b \b";
-                    confirmPassword.pop_back();
-                }
-            }
-            else {
-                cout << '*';
-                confirmPassword.push_back(ch);
-            }
-        }
-        if (password == confirmPassword) break;
+    string confirmPassword = getHiddenInput();
+    while (password != confirmPassword) {
         cout << "\nPasswords do not match! Please try again: ";
+        confirmPassword = getHiddenInput();
     }
+
     cout << "\nPassword successfully set.\n";
     return password;
 }
+

@@ -1,10 +1,13 @@
 #include "Classes.h"
+#include "mainFunctions.h"
 #include <iostream>
 #include <iomanip>
 #include <string>
 #include <vector>
+#include <conio.h>
 
 using namespace Role;
+
 
 inline void printSeparator() {
     cout << "+-------------------------------------------+" << endl;
@@ -175,7 +178,7 @@ void Client::leaveReview() {
 
 }
 
-void Authentication::clientMenu(shared_ptr<Client>& currentClient) {
+int Authentication::clientMenu(shared_ptr<Client>& currentClient) {
     int choice;
     do {
         cout << "\n=== Client Menu ===\n";
@@ -206,6 +209,7 @@ void Authentication::clientMenu(shared_ptr<Client>& currentClient) {
             break;
         case 0:
             cout << "Exiting client menu.\n";
+            return mainMenu();
             break;
         default:
             cout << "Invalid choice. Please try again.\n";
@@ -220,4 +224,79 @@ void madeAppointment(shared_ptr<Client>& client) {
     vector<Appointment> appointments;
     vector<Client> clients;
     client->makeAppointment("clientLogin", services, appointments, clients);
+}
+
+int clientRegistration(const string& login, const string& password) {
+    vector<Client> clients;
+    string name, surname, phone;
+    Data birthday;
+
+    cout << "Please enter your name: ";
+    cin >> ws;
+    getline(cin, name);
+    cout << "Please etner your surname: ";
+    getline(cin, surname);
+    cout << "Please etner your phone: +";
+    while (true) {
+        cin >> phone;
+        if (isValidPhoneNumber(phone)) {
+            break;
+        }
+        else {
+            cout << "Error! The phone number must contain exactly 12 digits. Repeat the entry: +";
+        }
+    }
+    cout << "Enter your birth date (dd mm yyyy): ";
+    while (true) {
+        cin >> birthday;
+        if (cin.fail() || !birthday.isValidDate()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid date. Please enter a valid date (dd mm yyyy): ";
+        }
+        else if (!isAdult(birthday, 14)) {
+            cout << "Registration is only available for users aged 14 or older. Sorry...\n";
+            return mainMenu();
+        }
+        else {
+            break;
+        }
+    }
+    Client newClient(login, name, surname, phone, birthday);
+    saveUserCredentials(login, password);
+    saveClientsToFile(clients);
+    cout << "Registration successful! Welcome, " << name << " " << surname << ".\n";
+    _getch();
+    system("cls");
+    //выход в программу под именем клиента
+    return 0;
+}
+
+int authenticateClient() {
+    Authentication authSystem;
+        cout << "+-----------------------------------------------+\n";
+        cout << "|                     Log in                    |\n";
+        cout << "+-----------------------------------------------+\n";
+        string login;
+        cout << "Enter your login: ";
+        cin >> login;
+        cout << "Enter your password: ";
+        string password = getHiddenInput();
+        while (true)
+        {
+            shared_ptr<Client> currentClient = checkUserCredentials(login, password);
+            if (currentClient)
+            {
+                cout << "\nYou are logged in as a regular user!" << endl;
+                _getch();
+                system("cls");
+                authSystem.clientMenu(currentClient);
+                break;
+            }
+            else
+            {
+                cout << "\nInvalid login or password. Try again." << endl;
+                return mainMenu();
+            }
+        }
 }

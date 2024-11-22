@@ -128,6 +128,7 @@ namespace Role {
 		Client() {}
 		Client(const string& login, const string& password, const string& name, const string& surname, const Data& birthday)
 			: Account(login, password), name(name), surname(surname), birthday(birthday) {}
+		Client(const string& login, const string& password) : Account(login, password) {};
 
 		void showRole() const override {
 			cout << "I'm a client" << endl;
@@ -183,7 +184,9 @@ namespace Role {
 	public:
 		Admin() = default;
 		Admin(const string& login, const string& password, int adminID) :
-			Account(login, password), adminID(adminID) {}
+			Account(login, password), adminID(adminID) {};
+		Admin(const string& login, const string& password) :
+			Account(login, password) {};
 
 		void showRole() const override {
 			cout << "I'm an administator" << endl;
@@ -233,14 +236,15 @@ namespace Role {
 		vector<shared_ptr<Admin>> admins_to_approve;
 	public:
 		bool authenticate(const string& login, const string& password, shared_ptr<Account>& currentAccount);
+		//bool login(const string& role, shared_ptr<Account>& currentAccount);
 
 		void registerAccount(shared_ptr<Account> account, const string& login, const string& password);
 		void registerSuperAdmin(const string& login, const string& password, int adminID);
 
 		void approveAdminRegistration(const string& login, bool approve);
 
-		void loginMenu();
-		void clientMenu(shared_ptr<Client>& currentClient);
+		int loginMenu();
+		int clientMenu(shared_ptr<Client>& currentClient);
 		void adminMenu(shared_ptr<Admin>& currentAdmin);
 		void superAdminMenu(shared_ptr<SuperAdmin>& currentSuperAdmin);
 	};

@@ -1,13 +1,15 @@
 #include <memory>
 #include <fstream>
+#include <conio.h>
 #include "Classes.h"
 #include "mainFunctions.h"
 using namespace std;
 using namespace Role;
 
+Authentication authSystem;
 
 int main() {
-    //считывание из всех файлов инфы
+    //add считывание из всех файлов инфы
     firstUsing();
     return 0;
 }
@@ -18,7 +20,7 @@ int mainMenu() {
     cout << "|                    Service accounting system in a cosmetic salon                           |\n";
     cout << "+--------------------------------------------------------------------------------------------+\n";
     cout << "|1 - Is this your first time in our program? Sign up                                         |\n";
-    cout << "|2 - Do you already have an account ? Sign in                                                |\n";
+    cout << "|2 - Do you already have an account ? Log in                                                 |\n";
     cout << "|0 - Exit                                                                                    |\n";
     cout << "+--------------------------------------------------------------------------------------------+\n";
     cout << "Your choice: ";
@@ -55,6 +57,19 @@ int registration() {
         else flag_log = true;
     } while (!flag_log);
     writeLoginToFile(login);
+    string password = getPassword();
+    int choice;
+    cout << "\n+-----------------------------------------------+\n";
+    cout << "|1 - sign up as a regular user                  |\n";
+    cout << "|2 - sign up as an administator                 |\n";
+    cout << "+-----------------------------------------------+\n";
+    cout << "Your choice: ";
+    cin >> choice;
+    choice = checkMenuChoice(choice, 1, 2);
+    switch (choice) {
+    case 1: clientRegistration(login, password);
+    case 2: adminRegistration(login, password);
+    }
     return 0;
 }
 

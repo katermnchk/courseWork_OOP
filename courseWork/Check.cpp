@@ -1,5 +1,9 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "Classes.h"
 #include <fstream>
+#include <time.h>
+
+using namespace Role;
 
 bool Data::isValidDate()
 {
@@ -34,4 +38,112 @@ bool checkLoginExists(const string& login)//проверка логина на уникальность
         cout << "Error opening a file for reading" << endl;
     }
     return exists;
+}
+
+int checkMenuChoice(int choice, int min, int max) {
+    while (cin.fail() || choice < min || choice > max) {
+        cout << "Error! Please etner a number from " << min << " to " << max << ": ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+        cin >> choice;
+    }
+    return choice;
+}
+
+bool isValidPhoneNumber(const string& phone) {
+    if (phone.length() != 12) {
+        return false;
+    }
+    for (char c : phone) {
+        if (!isdigit(c)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool isAdult(const Data& birthday, int minAge) {
+    time_t t = time(nullptr);
+    tm* currentTime = localtime(&t);
+    int currentYear = currentTime->tm_year + 1900;
+    int currentMonth = currentTime->tm_mon + 1;
+    int currentDay = currentTime->tm_mday;
+
+    int age = currentYear - birthday.getYear();
+    if (currentMonth < birthday.getMonth() ||
+        (currentMonth == birthday.getMonth() && currentDay < birthday.getDay())) {
+        age--;
+    }
+
+    return age >= minAge;
+}
+
+//shared_ptr<Client> checkUserCredentials(const string& login, const string& password) {
+//    ifstream file("user_credentials.txt"); // файл с логинами и паролями пользователей
+//    string storedLogin, storedPassword;
+//    shared_ptr<Client> isCorrect = nullptr;
+//    if (file.is_open())
+//    {
+//        while (file >> storedLogin >> storedPassword)
+//        {
+//            if (storedLogin == login && storedPassword == password){
+//                isCorrect = nullptr;
+//                break;
+//            }
+//        }
+//        file.close();
+//    }
+//    else
+//    {
+//        cout << "Ошибка открытия файла для чтения." << endl;
+//    }
+//    return isCorrect;
+//}
+
+shared_ptr<Client> checkUserCredentials(const string& login, const string& password) {
+    ifstream file("user_credentials.txt");
+    string storedLogin, storedPassword;
+    shared_ptr<Client> authenticatedClient = nullptr;
+
+    if (file.is_open()) {
+        while (file >> storedLogin >> storedPassword) { 
+            if (storedLogin == login && storedPassword == password) {
+                //объект Client
+                authenticatedClient = make_shared<Client>(login, password); 
+                break;
+            }
+        }
+        file.close();
+    }
+    else {
+        cout << "Ошибка открытия файла для чтения." << endl;
+    }
+
+    return authenticatedClient;
+}
+
+shared_ptr<Admin>  checkAdminCredentials(const string& login, const string& password)
+{
+    ifstream file("admin_credentials.txt"); 
+    string storedLogin, storedPassword;
+    shared_ptr<Admin> authenticatedAdmin = nullptr;
+
+    if (file.is_open())
+    {
+        while (file >> storedLogin >> storedPassword)
+        {
+            if (storedLogin == login && storedPassword == password)
+            {
+                authenticatedAdmin = make_shared<Admin>(login, password);
+                break;
+            }
+        }
+        file.close();
+    }
+    else
+    {
+        cout << "Ошибка открытия файла для чтения." << endl;
+    }
+
+    return authenticatedAdmin;
 }
