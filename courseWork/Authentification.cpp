@@ -9,7 +9,6 @@
 using namespace std;
 using namespace Role;
 
-
 void firstUsing() {
     Authentication authSystem;
     ifstream file("senior_admin_credentials.txt");
@@ -56,22 +55,6 @@ bool Authentication::authenticate(const string& login, const string& password, s
     }
     return false;
 }
-
-//bool Authentication::login(const string& role, shared_ptr<Account>& currentAccount) {
-//    cout << "Enter login: ";
-//    string login;
-//    cin >> login;
-//    cout << "Enter password: ";
-//    string password = getPassword();
-//
-//    if (authenticate(login, password, currentAccount)) {
-//        cout << "\nSuccessfully logged in as " << role << "!\n";
-//        return true;
-//    }
-//    cout << "\nInvalid login or password.\n";
-//    return false;
-//}
-
 
 void Authentication::registerAccount(shared_ptr<Account> account, const string& login, const string& password) {
     if (dynamic_pointer_cast<SuperAdmin>(account)) {
@@ -149,7 +132,8 @@ int Authentication::loginMenu() {
         return authenticateAdmin();
         break;
     case 3:
-        cout << " Log in as super administrator ";
+        system("cls");
+        return authenticateSuperAdmin();
         break;
     case 4:
         return mainMenu();
@@ -200,4 +184,3 @@ string getPassword() {
     cout << "\nPassword successfully set.\n";
     return password;
 }
-

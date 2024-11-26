@@ -108,7 +108,6 @@ shared_ptr<Client> checkUserCredentials(const string& login, const string& passw
     if (file.is_open()) {
         while (file >> storedLogin >> storedPassword) { 
             if (storedLogin == login && storedPassword == password) {
-                //объект Client
                 authenticatedClient = make_shared<Client>(login, password); 
                 break;
             }
@@ -146,4 +145,31 @@ shared_ptr<Admin>  checkAdminCredentials(const string& login, const string& pass
     }
 
     return authenticatedAdmin;
+}
+
+shared_ptr<SuperAdmin> checkSeniorAdminCredentials(const string& login, const string& password) {
+    ifstream file("senior_admin_credentials.txt");
+    string savedLogin, savedPassword;
+    bool found = false;
+
+    while (file >> savedLogin >> savedPassword) {
+        if (savedLogin == login) {
+            found = true;
+            if (savedPassword == password) { // Проверка пароля
+                file.close();
+                return make_shared<SuperAdmin>(login, password);
+            }
+            else {
+                file.close();
+                return nullptr; // Неверный пароль
+            }
+        }
+    }
+
+    if (!found) {
+        cout << "Пользователь с таким логином не найден." << endl;
+    }
+
+    file.close();
+    return nullptr;
 }

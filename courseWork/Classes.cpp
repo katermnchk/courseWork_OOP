@@ -25,5 +25,3 @@ string Data::toString() const
 		<< year;
 	return ss.str();
 }
-
-

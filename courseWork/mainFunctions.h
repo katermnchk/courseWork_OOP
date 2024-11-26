@@ -26,6 +26,14 @@ bool isValidPhoneNumber(const string& phone);
 bool isAdult(const Data& birthday, int minAge);
 void saveUserCredentials(const string& login, const string& password);
 void saveClientsToFile(const vector<Client>& clients);
+void saveAdminCredentials(const string& login, const string& password);
 
 shared_ptr<Client> checkUserCredentials(const string& login, const string& password);
 shared_ptr<Admin>  checkAdminCredentials(const string& login, const string& password);
+shared_ptr<SuperAdmin> checkSeniorAdminCredentials(const string& login, const string& password);
+
+string getAdminPassword(const string& login);
+string getAdminName(const string& login);
+string getSurname(const string& login);
+string getPhone(const string& login);
+Data getBirthday(const string& login);

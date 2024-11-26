@@ -60,6 +60,12 @@ public:
 	double getPrice() const { return price; }
 	int getDuration() const { return duration; }
 	Master getMaster() const { return master; }
+	void setName(const string& newName) { name = newName; }
+	void setInfo(const string& newInfo) { info = newInfo; }
+	void setPrice(double newPrice) { price = newPrice; }
+	void setDuration(int newDuration) { duration = newDuration; }
+	void setMaster(const Master& newMaster) { master = newMaster; }
+
 };
 
 class Appointment {
@@ -205,18 +211,13 @@ namespace Role {
 		bool getIsSuperAdmin() {
 			return isSuperAdmin;
 		}
-
-		void promoteToSuperAdmin() { isSuperAdmin = true; }
-		void demoteToAdmin() { isSuperAdmin = false; }
-
-		void addService(shared_ptr<Service> service);
-		void removeService(shared_ptr<Service> service);
-		void addAppointment(shared_ptr<Appointment> appointment);
-		void removeAppointment(shared_ptr<Appointment> appointment);
-
-		void viewClients() const;
-		void manageAppointments();
-		void manageServices();
+		void addService(vector<shared_ptr<Service>>& services);
+		void displayServices(vector<shared_ptr<Service>>& services);
+		static void editService(vector<shared_ptr<Service>>& services);
+		void deleteService(vector<shared_ptr<Service>>& services);
+		void viewUserRecords(const vector<shared_ptr<Client>>& clients) const;
+		void displayTopPopularServices(const vector<shared_ptr<Service>>& services) const;
+		void viewReviews(const vector<string>& reviews) const;
 	};
 
 	class SuperAdmin : public Admin {
@@ -225,10 +226,17 @@ namespace Role {
 	public:
 		SuperAdmin(const string& login, const string& password, int adminID)
 			: Admin(login, password, adminID) {}
+		SuperAdmin(const string& login, const string& password):
+			Admin(login, password) {};
 
-		void addAdmin(shared_ptr<Admin> admin);
-		void removeAdmin(shared_ptr<Admin> admin);
-		void viewAdmins() const;
+		
+		void displayAdminRequests();
+		void readAdminRequests(vector<string>& allRequests);
+		void removeAdminRequest(const string& login, const string& password);
+		void approveAdminRequest(const string& login, const string& password, const string& name, const string& surname, 
+			const string& phone, const Data& birthday);
+		void rejectAdminRequest(const string& login, const string& password, const string& name, const string& surname, 
+			const string& phone, const Data& birthday);
 	};
 
 	class Authentication {
@@ -245,8 +253,13 @@ namespace Role {
 
 		int loginMenu();
 		int clientMenu(shared_ptr<Client>& currentClient);
-		void adminMenu(shared_ptr<Admin>& currentAdmin);
-		void superAdminMenu(shared_ptr<SuperAdmin>& currentSuperAdmin);
+		int superAdminMenu(shared_ptr<SuperAdmin>& currentSuperAdmin);
+		void adminMenu(shared_ptr<Admin>& currentAdmin, vector<shared_ptr<Service>>& services, const vector<shared_ptr<Client>>& clients);
 	};
 
 }
+
+struct ProcedureInfo {
+	string name;
+	int count;
+};

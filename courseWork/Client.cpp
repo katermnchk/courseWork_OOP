@@ -191,6 +191,8 @@ int Authentication::clientMenu(shared_ptr<Client>& currentClient) {
         cout << "Enter your choice: ";
         cin >> choice;
 
+        choice = checkMenuChoice(choice, 0, 5);
+
         switch (choice) {
         case 1:
             currentClient->viewProfile();
@@ -210,12 +212,12 @@ int Authentication::clientMenu(shared_ptr<Client>& currentClient) {
         case 0:
             cout << "Exiting client menu.\n";
             return mainMenu();
-            break;
-        default:
-            cout << "Invalid choice. Please try again.\n";
         }
-    } while (choice != 5);
+    } while (choice != 0); 
+
+    return 0; 
 }
+
 
 void madeAppointment(shared_ptr<Client>& client) {
     vector<shared_ptr<Service>> services;
@@ -227,6 +229,7 @@ void madeAppointment(shared_ptr<Client>& client) {
 }
 
 int clientRegistration(const string& login, const string& password) {
+    Authentication authSystem;
     vector<Client> clients;
     string name, surname, phone;
     Data birthday;
@@ -263,13 +266,17 @@ int clientRegistration(const string& login, const string& password) {
         }
     }
     Client newClient(login, name, surname, phone, birthday);
+    shared_ptr<Client> currentClient = std::make_shared<Client>(newClient);
+    clients.push_back(*currentClient); // Добавление клиента в список
     saveUserCredentials(login, password);
     saveClientsToFile(clients);
     cout << "Registration successful! Welcome, " << name << " " << surname << ".\n";
     _getch();
     system("cls");
+    authSystem.clientMenu(currentClient);
     //выход в программу под именем клиента
     return 0;
+
 }
 
 int authenticateClient() {

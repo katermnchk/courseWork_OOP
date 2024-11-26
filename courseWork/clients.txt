@@ -1,1 +1,7 @@
 === Client list ===
+Login katerm
+Name: remenchik
+Surname: 123456789009
+Phone: +
+Birthday: 16.10.2005
+--------------------------

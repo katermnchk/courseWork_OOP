@@ -1,6 +1,7 @@
 #include <memory>
 #include <fstream>
 #include <conio.h>
+#include <Windows.h>
 #include "Classes.h"
 #include "mainFunctions.h"
 using namespace std;
@@ -9,7 +10,10 @@ using namespace Role;
 Authentication authSystem;
 
 int main() {
-    //add считывание из всех файлов инфы
+    //loadServicesFromFile(services);
+    //loadClientsFromFile(clients);
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
     firstUsing();
     return 0;
 }
@@ -78,5 +82,3 @@ int enter() {
     authSystem.loginMenu();    
     return 0;
 }
-
-
