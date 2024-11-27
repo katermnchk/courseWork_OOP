@@ -10,7 +10,6 @@ using namespace std;
 using namespace Role;
 
 void firstUsing() {
-    Authentication authSystem;
     ifstream file("senior_admin_credentials.txt");
     string login;
     if (file.is_open()) {
@@ -28,7 +27,7 @@ void firstUsing() {
             cin >> login;
             string password = getPassword();
             auto superAdmin = make_shared<SuperAdmin>(login, password, 001); 
-            authSystem.registerAccount(superAdmin, login, password); 
+            Global::authSystem.registerAccount(superAdmin, login, password); 
             writeLoginToFile(login);
             _getch();
             system("cls");
@@ -78,18 +77,6 @@ void Authentication::registerAccount(shared_ptr<Account> account, const string& 
     }
 }
 
-void Authentication::registerSuperAdmin(const string& login, const string& hashedPassword, int adminID) {
-    ofstream file("senior_admin_credentials.txt", ios::app);
-    if (file.is_open()) {
-        file << login << " " << hashedPassword << endl;
-        file.close();
-        cout << "SuperAdmin credentials have been saved.\n";
-    }
-    else {
-        cout << "Error opening file for writing SuperAdmin credentials.\n";
-    }
-}
-
 void Authentication::approveAdminRegistration(const string& login, bool approve) {
     for (auto it = admins_to_approve.begin(); it != admins_to_approve.end(); ++it) {
         if ((*it)->getLogin() == login) {
@@ -126,15 +113,15 @@ int Authentication::loginMenu() {
     case 1:
         system("cls");
         return authenticateClient();
-        break;
+        
     case 2:
         system("cls");
         return authenticateAdmin();
-        break;
+       
     case 3:
         system("cls");
         return authenticateSuperAdmin();
-        break;
+        
     case 4:
         return mainMenu();
     default:
@@ -184,3 +171,4 @@ string getPassword() {
     cout << "\nPassword successfully set.\n";
     return password;
 }
+

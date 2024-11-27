@@ -76,14 +76,13 @@ void SuperAdmin::rejectAdminRequest(const string& login, const string& password,
     const string& surname, const string& phone, const Data& birthday) {
     vector<string> requests;
     readAdminRequests(requests);
-    Client newClient(login, name, surname, phone, birthday);//если заявка отклонена, добавляем ноовго пользователя
-    //clients.push_back(newClient);
+    Client newClient(login, password, name, surname, phone, birthday);//если заявка отклонена, добавляем ноовго пользователя
+    Global::clients.push_back(newClient);
     saveUserCredentials(login, password);
-    //saveClientsToFile(clients);
+    saveClientsToFile(Global::clients);
     cout << "Заявка отклонена. Добавлен новый пользователь." << endl;
     removeAdminRequest(login, password);//удаление рассмотренной заявки
 }
-
 
 void SuperAdmin::displayAdminRequests() {
     vector<string> requests;
@@ -183,6 +182,7 @@ int Authentication::superAdminMenu(shared_ptr<SuperAdmin>& currentSuperAdmin) {
         }
         case 0:
             cout << "Exiting client menu.\n";
+            system("cls");
             return mainMenu();
         default:
             cout << "Неверный выбор." << endl;
@@ -192,8 +192,19 @@ int Authentication::superAdminMenu(shared_ptr<SuperAdmin>& currentSuperAdmin) {
     return 0;
 }
 
+void Authentication::registerSuperAdmin(const string& login, const string& hashedPassword, int adminID) {
+    ofstream file("senior_admin_credentials.txt", ios::app);
+    if (file.is_open()) {
+        file << login << " " << hashedPassword << endl;
+        file.close();
+        cout << "SuperAdmin credentials have been saved.\n";
+    }
+    else {
+        cout << "Error opening file for writing SuperAdmin credentials.\n";
+    }
+}
+
 int authenticateSuperAdmin() {
-    Authentication authSystem;
     cout << "+-----------------------------------------------+\n";
     cout << "|         Вход главного администратора          |\n";
     cout << "+-----------------------------------------------+\n";
@@ -210,7 +221,7 @@ int authenticateSuperAdmin() {
             cout << "\nВы вошли как старший администратор!" << endl;
             _getch();
             system("cls");
-            authSystem.superAdminMenu(currentSupAdmin);
+            Global::authSystem.superAdminMenu(currentSupAdmin);
             break;
         }
         else

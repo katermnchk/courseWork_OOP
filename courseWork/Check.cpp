@@ -5,7 +5,7 @@
 
 using namespace Role;
 
-bool Data::isValidDate()
+bool Data::isValidDate() const
 {
 	if (year < 1 || month < 1 || month > 12 || day < 1 || day > 31) return false;
 	if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30) return false;
@@ -15,7 +15,6 @@ bool Data::isValidDate()
 	}
 	return true;
 }
-
 
 bool checkLoginExists(const string& login)//проверка логина на уникальность
 {
@@ -77,28 +76,6 @@ bool isAdult(const Data& birthday, int minAge) {
 
     return age >= minAge;
 }
-
-//shared_ptr<Client> checkUserCredentials(const string& login, const string& password) {
-//    ifstream file("user_credentials.txt"); // файл с логинами и паролями пользователей
-//    string storedLogin, storedPassword;
-//    shared_ptr<Client> isCorrect = nullptr;
-//    if (file.is_open())
-//    {
-//        while (file >> storedLogin >> storedPassword)
-//        {
-//            if (storedLogin == login && storedPassword == password){
-//                isCorrect = nullptr;
-//                break;
-//            }
-//        }
-//        file.close();
-//    }
-//    else
-//    {
-//        cout << "Ошибка открытия файла для чтения." << endl;
-//    }
-//    return isCorrect;
-//}
 
 shared_ptr<Client> checkUserCredentials(const string& login, const string& password) {
     ifstream file("user_credentials.txt");
@@ -172,4 +149,8 @@ shared_ptr<SuperAdmin> checkSeniorAdminCredentials(const string& login, const st
 
     file.close();
     return nullptr;
+}
+
+bool isTimeSlotBooked(const Data& date, const Time& time, const Service& service) {
+    return false;
 }

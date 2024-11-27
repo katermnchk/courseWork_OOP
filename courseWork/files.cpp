@@ -1,7 +1,146 @@
 #include "Classes.h"
 #include <fstream>
+#include "mainFunctions.h"
 
 using namespace Role;
+
+void loadServicesFromFile(vector<Service> services) {
+    ifstream file("services.txt");
+    if (file.is_open()) {
+        services.clear();
+        string line;
+        while (getline(file, line)) {
+            try {
+                string name, info, masterName, masterSurname;
+                int price = 0, duration = 0;
+
+                size_t pos = 0;
+
+                // Извлечение name
+                pos = line.find(",");
+                if (pos == string::npos) throw invalid_argument("Invalid format");
+                name = line.substr(0, pos);
+                line.erase(0, pos + 1);
+
+                // Извлечение info
+                pos = line.find(",");
+                if (pos == string::npos) throw invalid_argument("Invalid format");
+                info = line.substr(0, pos);
+                line.erase(0, pos + 1);
+
+                // Извлечение price
+                pos = line.find(",");
+                if (pos == string::npos) throw invalid_argument("Invalid format");
+                string priceStr = line.substr(0, pos);
+                if (!priceStr.empty()) {
+                    price = stoi(priceStr); // Возможный источник исключения
+                }
+                line.erase(0, pos + 1);
+
+                // Извлечение duration
+                pos = line.find(",");
+                if (pos == string::npos) throw invalid_argument("Invalid format");
+                string durationStr = line.substr(0, pos);
+                if (!durationStr.empty()) {
+                    duration = stoi(durationStr); // Возможный источник исключения
+                }
+                line.erase(0, pos + 1);
+
+                // Извлечение masterName и masterSurname
+                pos = line.find(",");
+                if (pos == string::npos) throw invalid_argument("Invalid format");
+                masterName = line.substr(0, pos);
+                masterSurname = line.substr(pos + 1);
+
+                // Создание объектов Master и Service
+                Master m = { masterName, masterSurname };
+                Service s(name, info, price, duration, m);
+                Global::services.push_back(s);
+                //auto s = make_shared<Service>(name, info, price, duration, m);
+                //services.push_back(s);
+            }
+            catch (const exception& e) {
+                cerr << "Ошибка при обработке строки: " << line
+                    << "\nПричина: " << e.what() << "\nПропуск строки." << endl;
+            }
+        }
+        file.close();
+    }
+    else {
+        cerr << "Файл с услугами не найден." << endl;
+    }
+}
+void loadClientsFromFile(vector<Client> clients) {
+    ifstream file("clients.txt");
+    if (file.is_open())
+    {
+        clients.clear();
+        string line;
+        string login, name, surname, phone;
+        Master mast;
+        Data birthday;
+        string password = "***";
+        bool flag = false;//флаг для считывания даты рождения
+        bool flagService = false;//флаг для считывания услуги
+        while (getline(file, line))
+        {
+            // если считаны все данные для клиента, добавляем его в вектор
+            if (!login.empty() && !name.empty() && !surname.empty() && !phone.empty() && flag) {
+                Client client(login, password, name, surname, phone, birthday);
+                client.setLogin(login); // устанавливаем логин
+                client.setName(name); // устанавливаем имя
+                client.setSurname(surname); // устанавливаем фамилию
+                client.setPhone(phone); // устанавливаем номер телефона
+                //client.setBirthday(birthday);
+                Global::clients.push_back(client);
+
+                // сбрасываем данные для следующего клиента
+                login.clear();
+                name.clear();
+                surname.clear();
+                phone.clear();
+                birthday = Data();
+
+            }
+
+            if (line.empty())
+                continue;
+
+            // считываем данные построчно и извлекаем нужные поля
+            if (line.find("Логин: ") != string::npos)
+            {
+                flag = false;//для нового пользователя
+                flagService = false;
+                login = line.substr(7);
+            }
+            else if (line.find("Имя: ") != string::npos)
+            {
+                name = line.substr(5);
+            }
+            else if (line.find("Фамилия: ") != string::npos)
+            {
+                surname = line.substr(9);
+            }
+            else if (line.find("Телефон: ") != string::npos)
+            {
+                phone = line.substr(9);
+            }
+            else if (line.find("Дата рождения: ") != string::npos)
+            {
+                int day, month, year;
+                sscanf_s(line.c_str(), "Дата рождения: %d %d %d", &day, &month, &year);
+                birthday.setData(day, month, year);
+                flag = true;
+            }
+        }
+
+        file.close();
+    }
+    else
+    {
+        cout << "Файл с клиентами не найден." << endl;
+    }
+}
 
 void writeLoginToFile(const string& login) {
     ofstream file("logins.txt", ios::app);
@@ -28,59 +167,87 @@ void saveUserCredentials(const string& login, const string& password) {
         cout << "Error opening a file for writing" << endl;
     }
 }
-
-void saveClientsToFile(const vector<Client>& clients) {
-    ofstream file("clients.txt");
-    if (file.is_open()) {
-        file << "=== Client list ===\n";
-        for (const auto& client : clients) {
-            file << "Login " << client.getLogin() << "\n";
-            file << "Name: " << client.getName() << "\n";
-            file << "Surname: " << client.getSurname() << "\n";
-            file << "Phone: +" << client.getPhone() << "\n";
-            file << "Birthday: " << client.getBirthday().toString() << "\n";
-            file << "--------------------------\n";
-        }
-        file.close();
-        cout << "Clients have been successfully saved to a file" << endl;
-    }
-    else {
-        cerr << "Error opening a file for writing" << endl;
-    }
-}
-
-//static void saveServicesToFile(const vector<Service>& services) {
-//    ofstream file("services.txt");
-//    if (file.is_open())
-//    {
-//        for (const auto& service : services)
-//        {
-//            file << service.getName() << "," << service.getInfo() << "," << service.getPrice() << "," << service.getDuration() << ","
-//                << service.getMaster().getName() << "," << service.getMaster().getSurname() << endl;
-//        }
-//        file.close();
-//    }
-//    else
-//    {
-//        cout << "Ошибка сохранения услуг в файл." << endl;
-//    }
-//}
-
-void saveServicesToFile(const vector<shared_ptr<Service>>& services) {
-    ofstream file("services.txt");
-    if (!file.is_open()) {
-        cerr << "Ошибка при открытии файла для сохранения услуг." << endl;
+void saveUserAppointment(const shared_ptr<Client>& client, const Service& selectedService, 
+    const Data& appointmentDate, const Time& appointmentTime) {
+    // Открываем файл для добавления записи
+    ofstream appointmentFile("user_appointments.txt", ios::app);
+    if (!appointmentFile.is_open()) {
+        cout << "Ошибка открытия файла для записи.\n";
         return;
     }
-    for (const auto& service : services) {
-        file << service->getName() << ";"
-            << service->getInfo() << ";"
-            << service->getPrice() << ";"
-            << service->getDuration() << ";"
-            << service->getMaster().getName() << " "
-            << service->getMaster().getSurname() << endl;
+
+    // Проверяем доступность временного слота
+    if (isTimeSlotBooked(appointmentDate, appointmentTime, selectedService)) {
+        cout << "Выбранное время уже занято. Невозможно сохранить запись.\n";
+        return;
     }
-    file.close();
+
+    // Сохраняем запись в общий файл записей
+    appointmentFile << "Логин: " << client->getLogin() << "\n"
+        << "Имя: " << client->getName() << "\n"
+        << "Фамилия: " << client->getSurname() << "\n"
+        << "Номер телефона: " << client->getPhone() << "\n"
+        << "Услуга: " << selectedService.getName() << "\n"
+        << "Мастер: " << selectedService.getMaster().getName() << " " << selectedService.getMaster().getSurname() << "\n"
+        << "Дата: " << appointmentDate.getDay() << "/" << appointmentDate.getMonth() << "/" << appointmentDate.getYear() << "\n"
+        << "Время: " << (appointmentTime.getHour() < 10 ? "0" : "") << appointmentTime.getHour() << ":"
+        << (appointmentTime.getMinute() < 10 ? "0" : "") << appointmentTime.getMinute() << "\n"
+        << "----------------------------------\n";
+
+    appointmentFile.close();
+    cout << "Запись успешно сохранена!\n";
+
+    // Обновляем основной файл клиентов
+    updateClientFile(client, selectedService, appointmentDate, appointmentTime);
+}
+void updateClientFile(const shared_ptr<Client>& client, const Service& selectedService,
+    const Data& appointmentDate, const Time& appointmentTime) {
+    ifstream clientFile("clients.txt");
+    ofstream tempFile("temp_clients.txt");
+
+    if (!clientFile.is_open() || !tempFile.is_open()) {
+        cout << "Ошибка открытия файлов для обновления клиента.\n";
+        return;
+    }
+
+    string line;
+    string login = client->getLogin();
+    bool found = false;
+
+    while (getline(clientFile, line)) {
+        // Проверяем логин клиента
+        if (line.find("Логин: " + login) != string::npos) {
+            found = true;
+            tempFile << line << "\n";
+
+            // Сохраняем данные клиента
+            for (int i = 0; i < 4; ++i) {
+                getline(clientFile, line);
+                tempFile << line << "\n";
+            }
+
+            // Добавляем новую запись
+            tempFile << "Услуга: " << selectedService.getName() << "\n"
+                << "Мастер: " << selectedService.getMaster().getName() << " " << selectedService.getMaster().getSurname() << "\n"
+                << "Дата записи: " << appointmentDate.getDay() << "/" << appointmentDate.getMonth() << "/" << appointmentDate.getYear() << "\n"
+                << "Время записи: " << (appointmentTime.getHour() < 10 ? "0" : "") << appointmentTime.getHour() << ":"
+                << (appointmentTime.getMinute() < 10 ? "0" : "") << appointmentTime.getMinute() << "\n";
+        }
+        else {
+            tempFile << line << "\n";
+        }
+    }
+
+    if (!found) {
+        cout << "Логин клиента не найден.\n";
+    }
+
+    clientFile.close();
+    tempFile.close();
+
+    // Удаляем старый файл и переименовываем временный
+    remove("clients.txt");
+    rename("temp_clients.txt", "clients.txt");
 }
 
 void saveAdminCredentials(const string& login, const string& password) {
@@ -94,6 +261,61 @@ void saveAdminCredentials(const string& login, const string& password) {
     else
     {
         cout << "Ошибка открытия файла для записи." << endl;
+    }
+}
+
+void saveClientsToFile(vector<Client> clients) {
+    ofstream file("clients.txt");
+    if (file.is_open()) {
+        for (const auto& client : clients) {
+            file << "Логин: " << client.getLogin() << "\n";
+            file << "Имя: " << client.getName() << "\n";
+            file << "Фамилия: " << client.getSurname() << "\n";
+            file << "Телефон: " << client.getPhone() << "\n";
+            file << "Дата рождения: " << client.getBirthday().toString() << "\n";
+            file << "\n";
+        }
+        file.close();
+        cout << "Clients have been successfully saved to a file" << endl;
+    }
+    else {
+        cerr << "Error opening a file for writing" << endl;
+    }
+}
+void saveServicesToFile(const vector<Service>& services) {
+    ofstream file("services.txt");
+    if (file.is_open())
+    {
+        for (const auto& Service : services)
+        {
+            file << Service.getName() << "," << Service.getInfo() << "," << Service.getPrice() << "," << Service.getDuration() << ","
+                << Service.getMaster().getName() << "," << Service.getMaster().getSurname() << endl;
+        }
+        file.close();
+    }
+    else
+    {
+        cout << "Ошибка сохранения услуг в файл." << endl;
+    }
+}
+
+void addAdminRequest(const string& login, const string& password, const string& name, const string& surname,
+    const string& phone, const Data& birthday) {
+    ofstream file("admin_requests.txt", ios::app);
+    if (file.is_open())
+    {
+        file << "Логин: " << login << "\n";
+        file << "Пароль: " << password << "\n";
+        file << "Имя: " << name << "\n";
+        file << "Фамилия: " << surname << "\n";
+        file << "Телефон: " << phone << "\n";
+        file << "Дата рождения: " << birthday.getDay() << " " << birthday.getMonth() << " " << birthday.getYear() << "\n";
+        file << "\n"; // пустая строка для разделения заявок
+        file.close();
+    }
+    else
+    {
+        cout << "Ошибка сохранения заявки." << endl;
     }
 }
 
@@ -214,3 +436,103 @@ Data getBirthday(const string& login) {
     }
     return {}; // если логин не найден
 }
+
+
+/*void loadServicesFromFile(vector<shared_ptr<Service>> services) {
+    ifstream file("services.txt");
+    if (file.is_open()) {
+        services.clear();
+        string line;
+        while (getline(file, line)) {
+            try {
+                string name, info, masterName, masterSurname;
+                int price = 0, duration = 0;
+
+                size_t pos = 0;
+
+                // Извлечение name
+                pos = line.find(",");
+                if (pos == string::npos) throw invalid_argument("Invalid format");
+                name = line.substr(0, pos);
+                line.erase(0, pos + 1);
+
+                // Извлечение info
+                pos = line.find(",");
+                if (pos == string::npos) throw invalid_argument("Invalid format");
+                info = line.substr(0, pos);
+                line.erase(0, pos + 1);
+
+                // Извлечение price
+                pos = line.find(",");
+                if (pos == string::npos) throw invalid_argument("Invalid format");
+                string priceStr = line.substr(0, pos);
+                if (!priceStr.empty()) {
+                    price = stoi(priceStr); // Возможный источник исключения
+                }
+                line.erase(0, pos + 1);
+
+                // Извлечение duration
+                pos = line.find(",");
+                if (pos == string::npos) throw invalid_argument("Invalid format");
+                string durationStr = line.substr(0, pos);
+                if (!durationStr.empty()) {
+                    duration = stoi(durationStr); // Возможный источник исключения
+                }
+                line.erase(0, pos + 1);
+
+                // Извлечение masterName и masterSurname
+                pos = line.find(",");
+                if (pos == string::npos) throw invalid_argument("Invalid format");
+                masterName = line.substr(0, pos);
+                masterSurname = line.substr(pos + 1);
+
+                // Создание объектов Master и Service
+                Master m = { masterName, masterSurname };
+                auto s = make_shared<Service>(name, info, price, duration, m);
+                services.push_back(s);
+            }
+            catch (const exception& e) {
+                cerr << "Ошибка при обработке строки: " << line
+                    << "\nПричина: " << e.what() << "\nПропуск строки." << endl;
+            }
+        }
+        file.close();
+    }
+    else {
+        cerr << "Файл с услугами не найден." << endl;
+    }
+}*/
+
+//static void saveServicesToFile(const vector<Service>& services) {
+//    ofstream file("services.txt");
+//    if (file.is_open())
+//    {
+//        for (const auto& service : services)
+//        {
+//            file << service.getName() << "," << service.getInfo() << "," << service.getPrice() << "," << service.getDuration() << ","
+//                << service.getMaster().getName() << "," << service.getMaster().getSurname() << endl;
+//        }
+//        file.close();
+//    }
+//    else
+//    {
+//        cout << "Ошибка сохранения услуг в файл." << endl;
+//    }
+//}
+
+/*void saveServicesToFile(const vector<shared_ptr<Service>>& services) {
+    ofstream file("services.txt");
+    if (!file.is_open()) {
+        cerr << "Ошибка при открытии файла для сохранения услуг." << endl;
+        return;
+    }
+    for (const auto& service : services) {
+        file << service->getName() << ";"
+            << service->getInfo() << ";"
+            << service->getPrice() << ";"
+            << service->getDuration() << ";"
+            << service->getMaster().getName() << " "
+            << service->getMaster().getSurname() << endl;
+    }
+    file.close();
+}*/

@@ -4,16 +4,23 @@
 #include <Windows.h>
 #include "Classes.h"
 #include "mainFunctions.h"
+
 using namespace std;
 using namespace Role;
 
-Authentication authSystem;
+namespace Global {
+    Authentication authSystem;
+    vector<Service> services;
+    vector<Role::Client> clients;
+    vector<Role::Admin> admins;
+    vector<Shedule> appointmentSlots;
+}
 
 int main() {
-    //loadServicesFromFile(services);
-    //loadClientsFromFile(clients);
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
+    loadServicesFromFile(Global::services);
+    loadClientsFromFile(Global::clients);
     firstUsing();
     return 0;
 }
@@ -40,8 +47,9 @@ int mainMenu() {
     switch (choice_role) {
         case 1: return registration();
         case 2: return enter();
-        case 0: return 0;
+        case 0: return -1;
     }
+    return 0;
 }
 
 int registration() {
@@ -71,14 +79,13 @@ int registration() {
     cin >> choice;
     choice = checkMenuChoice(choice, 1, 2);
     switch (choice) {
-    case 1: clientRegistration(login, password);
-    case 2: adminRegistration(login, password);
+    case 1: clientRegistration(login, password); break;
+    case 2: adminRegistration(login, password); break;
     }
     return 0;
 }
 
 int enter() {
-    Authentication authSystem;
-    authSystem.loginMenu();    
+    Global::authSystem.loginMenu();    
     return 0;
 }

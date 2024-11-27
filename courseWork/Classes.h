@@ -10,6 +10,7 @@ private:
 	string name;
 	string surname;
 public:
+	Master() {};
 	Master(const string& name, const string& surname) : name(name), surname(surname) {}
 
 	string getName() const { return name; }
@@ -38,9 +39,68 @@ public:
 		return year; 
 	}
 
-	bool isValidDate();
+	bool isValidDate() const;
 	friend istream& operator>>(istream& in, Data& data);
 	string toString() const;
+
+	bool operator==(const Data& other) const {
+		return day == other.day&& month == other.month && year == other.year;
+	}
+};
+
+class Time {
+private:
+	int hour, minute, second;
+
+public:
+	Time(int hour = 0, int minute = 0, int second = 0) : hour(hour), minute(minute), second(second) {
+		if (hour < 0 || hour > 23) this->hour = 0;
+		if (minute < 0 || minute > 59) this->minute = 0;
+		if (second < 0 || second > 59) this->second = 0;
+	}
+
+	void setTime(int hour, int minute, int second) {
+		if (hour >= 0 && hour <= 23) this->hour = hour;
+		if (minute >= 0 && minute <= 59) this->minute = minute;
+		if (second >= 0 && second <= 59) this->second = second;
+	}
+
+	// Вывод времени на экран
+	void displayTime() const {
+		cout << (hour < 10 ? "0" : "") << hour << ":"
+			<< (minute < 10 ? "0" : "") << minute << ":"
+			<< (second < 10 ? "0" : "") << second << endl;
+	}
+
+	// Получение часов, минут и секунд
+	int getHour() const { return hour; }
+	int getMinute() const { return minute; }
+	int getSecond() const { return second; }
+
+	// Метод для проверки корректности времени
+	bool isValidTime() const {
+		return (hour >= 0 && hour <= 23) && (minute >= 0 && minute <= 59) && (second >= 0 && second <= 59);
+	}
+
+	// Перегрузка оператора ввода (для чтения времени)
+	friend istream& operator>>(istream& in, Time& time) {
+		in >> time.hour >> time.minute >> time.second;
+		if (time.hour < 0 || time.hour > 23) time.hour = 0;
+		if (time.minute < 0 || time.minute > 59) time.minute = 0;
+		if (time.second < 0 || time.second > 59) time.second = 0;
+		return in;
+	}
+
+	// Метод преобразования времени в строку
+	string toString() const {
+		return (hour < 10 ? "0" : "") + to_string(hour) + ":" +
+			(minute < 10 ? "0" : "") + to_string(minute) + ":" +
+			(second < 10 ? "0" : "") + to_string(second);
+	}
+
+	bool operator==(const Time& other) const {
+		return hour == other.hour && minute == other.minute;
+	}
 };
 
 class Service {
@@ -72,10 +132,13 @@ class Appointment {
 private:
 	Data date;
 	Service service;
-
+	string details;
 public:
-	Appointment(const Data& date, const Service& service)
-		: date(date), service(service) {}
+	Appointment(const Service& service, const Data& date)
+		: service(service), date(date) {}
+	Appointment(const Service& service, const Data& date, const std::string& details)
+		: service(service), date(date), details(details) {}
+
 
 	void displayAppointment() const {
 		cout << "Appointment on " << date.toString() << " for service: " << service.getName() << endl;
@@ -87,6 +150,7 @@ public:
 	const Service& getService() const { 
 		return service; 
 	}
+	string getDetails() const { return details; }
 };
 
 namespace Role {
@@ -132,8 +196,9 @@ namespace Role {
 		vector<shared_ptr<Appointment>> appointments; 
 	public:
 		Client() {}
-		Client(const string& login, const string& password, const string& name, const string& surname, const Data& birthday)
-			: Account(login, password), name(name), surname(surname), birthday(birthday) {}
+		Client(const string& login, const string& password, const string& name, const string& surname, const string& phone, const Data& birthday)
+			: Account(login, password), name(name), surname(surname), phone(phone), birthday(birthday) {}
+		
 		Client(const string& login, const string& password) : Account(login, password) {};
 
 		void showRole() const override {
@@ -159,7 +224,7 @@ namespace Role {
 		}
 		Data getBirthday() const {
 			return birthday;
-		} //тут коряво, сделать через методы класса Дата
+		} 
 
 		void setPhone(const string& newPhone) {
 			phone = newPhone;
@@ -175,24 +240,33 @@ namespace Role {
 			return appointments;
 		}
 
+		void showServices(const vector<Service>& services);
 		void showServices();
-		void makeAppointment(const string& login, vector<shared_ptr<Service>>& services, vector<Appointment>& appointments, vector<Client>& clients);
+		void setAppointment(Service service, const Data& appointmentDate);
 		//void makeAppointment(const string& login, vector<Service>& services, vector<Appointment>& appointments, vector<Client>& clients);
 		void editProfile();
 		void viewProfile();
 		void leaveReview();
+		void filterAndShowServices(double minPrice, double maxPrice, int minTime, int maxTime, bool isPriceFilter);
+		void searchService();
 	};
 
 	class Admin : public Account {
 	private:
 		int adminID;
 		bool isSuperAdmin = false;
+		string name;
+		string surname;
+		Data birthday;
+		string phone;
 	public:
 		Admin() = default;
 		Admin(const string& login, const string& password, int adminID) :
 			Account(login, password), adminID(adminID) {};
 		Admin(const string& login, const string& password) :
 			Account(login, password) {};
+		Admin(const string& login, const string& name, const string& surname, const string& phone, const Data& birthday)
+			: Account(login, password), name(name), surname(surname), birthday(birthday) {}
 
 		void showRole() const override {
 			cout << "I'm an administator" << endl;
@@ -211,12 +285,17 @@ namespace Role {
 		bool getIsSuperAdmin() {
 			return isSuperAdmin;
 		}
-		void addService(vector<shared_ptr<Service>>& services);
-		void displayServices(vector<shared_ptr<Service>>& services);
-		static void editService(vector<shared_ptr<Service>>& services);
-		void deleteService(vector<shared_ptr<Service>>& services);
-		void viewUserRecords(const vector<shared_ptr<Client>>& clients) const;
-		void displayTopPopularServices(const vector<shared_ptr<Service>>& services) const;
+		//void addService(vector<shared_ptr<Service>>& services);
+		//void displayServices(vector<shared_ptr<Service>>& services);
+		void displayServices();
+		//static void editService(vector<shared_ptr<Service>>& services);
+		void editService(vector<Service>& services);
+		//void deleteService(vector<shared_ptr<Service>>& services);
+		void addService(vector<Service> services);
+		void deleteService(vector<Service> services);
+		void viewUserRecords() const;
+		//void viewUserRecords(const vector<shared_ptr<Client>>& clients) const;
+		void displayTopPopularServices(const vector<Client> clients) const;
 		void viewReviews(const vector<string>& reviews) const;
 	};
 
@@ -252,9 +331,12 @@ namespace Role {
 		void approveAdminRegistration(const string& login, bool approve);
 
 		int loginMenu();
-		int clientMenu(shared_ptr<Client>& currentClient);
+		///int clientMenu(Client newClient);
 		int superAdminMenu(shared_ptr<SuperAdmin>& currentSuperAdmin);
-		void adminMenu(shared_ptr<Admin>& currentAdmin, vector<shared_ptr<Service>>& services, const vector<shared_ptr<Client>>& clients);
+		//int adminMenu(shared_ptr<Admin>& currentAdmin, vector<shared_ptr<Service>>& services, const vector<shared_ptr<Client>>& clients);
+		int adminMenu(shared_ptr<Admin>& currentAdmin);
+		int clientMenu(shared_ptr<Client>& currentClient);
+		//int adminMenu(Admin currentAdmin);
 	};
 
 }
@@ -263,3 +345,23 @@ struct ProcedureInfo {
 	string name;
 	int count;
 };
+
+struct Shedule {
+	Data appointmentDate;
+	Time appointmentTime;
+	bool isBooked;
+	Master master;
+	Service selectedService;
+
+	Shedule(Data date, Time time, Master master, const Service& selectedService)
+		: appointmentDate(date), appointmentTime(time), isBooked(false), master(master), selectedService(selectedService) {}
+};
+
+namespace Global {
+	extern Role::Authentication authSystem;
+	extern vector<Service> services;
+	//extern vector<Role::Client> clients;
+	extern vector<Role::Client> clients;
+	extern vector<Role::Admin> admins;
+	extern vector<Shedule> appointmentSlots;
+}
