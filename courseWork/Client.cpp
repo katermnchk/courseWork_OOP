@@ -128,6 +128,8 @@ int displayServicesWithSort(shared_ptr<Client>& currentClient) {
         }
         return Global::authSystem.clientMenu(currentClient);
     }
+    case 2: currentClient->showServices();
+        break;
     }
 }
 void Client::showServices() {
@@ -151,6 +153,7 @@ void Client::showServices(const vector<Service>& services) {
         cout << "+-----+-------------------------+-------------------------------------+----------+---------------+-----------------------------+" << endl;
     }
 }
+
 
 void madeAppointment(shared_ptr<Client>& currentClient) {
     while (true) {
@@ -235,7 +238,13 @@ void madeAppointment(shared_ptr<Client>& currentClient) {
 
         // Добавление записи через setAppointment
         currentClient->setAppointment(selectedService, chosenDate); // передаем услугу, дату и пустые детали
-
+        if (!currentClient) {
+            cout << "Ошибка: currentClient не инициализирован!\n";
+        }
+        else {
+            cout << "currentClient инициализирован!\n";
+            cout << "\n" << currentClient->getName() << "\n";
+        }
         // Подтверждение записи
         cout << "---------------------------------------------\n";
         cout << "Вы успешно записаны на услугу: " << selectedService.getName() << endl;
@@ -248,6 +257,7 @@ void madeAppointment(shared_ptr<Client>& currentClient) {
         return;
     }
 }
+
 void Client::setAppointment(Service service, const Data& appointmentDate) {
     if (service.getName().empty()) {
         cout << "Ошибка: Услуга не выбрана." << endl;
@@ -727,244 +737,3 @@ void sortByName() {
         }
     }
 }
-
-
-
-/*void Client::makeAppointment(const string& login, vector<shared_ptr<Service>>& services, vector<Appointment>& appointments,
-    vector<Client>& clients) {
-    cout << "\n+-------------------------------------------+\n";
-    cout << "|           CHOOSE A SERVICE                |\n";
-    cout << "+-------------------------------------------+\n";
-    cout << "Enter number for the service: " << endl;
-    for (int i = 0; i < services.size(); ++i) {
-        cout << i + 1 << ". " << services[i]->getName() << endl;
-    }
-    cout << "---------------------------------------------\n";
-    cout << "Enter the number or type 0 to exit: ";
-    int serviceChoice;
-    cin >> serviceChoice;
-
-    if (serviceChoice >= 1 && serviceChoice <= services.size()) {
-        Service selectedService = *services[serviceChoice - 1];
-        cout << "---------------------------------------------\n";
-        cout << "You selected service: " << selectedService.getName() << "\n---------------------------------------------";
-
-        Data chosenDate;
-        cout << "Enter date (dd mm yyyy): ";
-        cin >> chosenDate;
-
-        chosenDate.setData(chosenDate.getDay(), chosenDate.getMonth(), chosenDate.getYear());
-
-        while (!chosenDate.isValidDate()) {
-            cout << "Invalid date. Please re-enter date (dd mm yyyy): ";
-            cin >> chosenDate;
-            cin.clear();
-            cin.ignore(INT_MAX, '\n');
-        }
-
-        Appointment newAppointment(chosenDate, selectedService);
-        appointments.push_back(newAppointment);
-        cout << "Appointment successfully made for " << chosenDate.toString() << " with " << selectedService.getName() << ".\n";
-    }
-}*/
-
-/*void Client::makeAppointment() {
-    // Запрос номера услуги для записи
-    cout << "\n+-------------------------------------------+\n";
-    cout << "|           Запись на процедуру             |" << endl;
-    cout << "+-------------------------------------------+\n";
-    cout << "Выберите услугу для записи:" << endl;
-    for (int i = 0; i < Global::services.size(); ++i) {
-        cout << i + 1 << ". " << Global::services[i].getName() << endl;
-    }
-    cout << "---------------------------------------------\n";
-    cout << "Введите номер или нажмите 0 для выхода: ";
-    int serviceChoice;
-    cin >> serviceChoice;
-
-    // Проверка выбранной услуги
-    if (serviceChoice == 0) {
-        return ;
-    }
-
-    if (serviceChoice < 1 || serviceChoice > Global::services.size()) {
-        cout << "\nНеверный выбор услуги!" << endl;
-        return; // Prompt the user to try again
-    }
-
-    Service selectedService = Global::services[serviceChoice - 1];
-    cout << "---------------------------------------------\n";
-    cout << "Вы выбрали услугу: " << selectedService.getName();
-    cout << "\n---------------------------------------------";
-
-    // Заполнение даты записи
-    Data chosenDate;
-    cout << "\nВведите дату (дд мм гггг): ";
-    cin >> chosenDate;
-
-    while (!chosenDate.isValidDate()) {
-        cout << "Invalid date. Please re-enter date (dd mm yyyy): ";
-        cin >> chosenDate;
-        cin.clear();
-        cin.ignore(INT_MAX, '\n');
-    }
-
-    // Проверка доступных временных слотов для выбранной даты и услуги
-    vector<Time> availableTimes = findAvailableTimes(chosenDate, selectedService, appointmentSlots);
-
-    if (availableTimes.empty()) {
-        cout << "На выбранную дату нет доступных временных слотов.\n";
-        return user(login); // Return to user menu if no times are available
-    }
-
-    // Вывод доступных временных слотов
-    cout << "Доступные временные слоты для выбранной даты:\n";
-    for (int i = 0; i < availableTimes.size(); ++i) {
-        cout << i + 1 << ". " << availableTimes[i].hour << ":" << availableTimes[i].minute << endl;
-    }
-
-    // Запрос номера временного слота
-    int timeChoice;
-    cout << "Выберите время (номер): ";
-    cin >> timeChoice;
-
-    // Проверка выбранного времени
-    if (timeChoice < 1 || timeChoice > availableTimes.size()) {
-        cout << "\nНеверный выбор времени.\n";
-        return user(login); // Prompt the user again if invalid
-    }
-
-    Time chosenTime = availableTimes[timeChoice - 1];
-
-    // Проверка доступности временного слота
-    if (isTimeSlotBooked(chosenDate, chosenTime, selectedService)) {
-        cout << "Выбранное время уже занято. Пожалуйста, выберите другое время.\n";
-        return user(login); // Prompt the user to select another time
-    }
-
-    // Установка даты и времени записи клиента
-    Client client = findClientByLogin(login, clients);
-    client.setAppointmentDate(chosenDate);
-    client.setAppointmentTime(chosenTime);
-
-    saveUserAppointment(client, selectedService);
-
-    // Вывод информации о записи
-    cout << "---------------------------------------------\n";
-    cout << "Вы успешно записаны на " << selectedService.getName() << " к "
-        << selectedService.getMaster().name << " " << selectedService.getMaster().surname
-        << " на " << chosenDate.day << "/" << chosenDate.month << "/" << chosenDate.year
-        << " в " << chosenTime.hour << ":" << chosenTime.minute << "0" << endl;
-    cout << "---------------------------------------------\n";
-}
-
-bool isTimeSlotBooked(const Data& date, const Time& time, const Service& service) {
-    for (const auto& appointment : appointmentSlots) {
-        if (appointment.appointmentDate == date &&
-            appointment.appointmentTime == time &&
-            appointment.isBooked &&
-            appointment.selectedService.getName() == service.getName()) {
-            return true; // Slot is already booked
-        }
-    }
-    return false; // Slot is available
-}*/
-
-/*void madeAppointment(shared_ptr<Client>& client) {
-    vector<shared_ptr<Service>> services;
-    services.push_back(make_shared<Service>("Haircut", "A nice haircut", 30, 45, Master("John", "Smith")));
-    services.push_back(make_shared<Service>("Massage", "Relaxing body massage", 50, 60, Master("Sarah", "Jones")));
-    vector<Appointment> appointments;
-    vector<Client> clients;
-    //client->makeAppointment("clientLogin", services, appointments, clients);
-}*/
-
-/*void madeAppointment(shared_ptr<Client>& client) {
-    // Запрос номера услуги для записи
-    cout << "\n+-------------------------------------------+\n";
-    cout << "|           Запись на процедуру             |" << endl;
-    cout << "+-------------------------------------------+\n";
-    cout << "Выберите услугу для записи:" << endl;
-    for (int i = 0; i < Global::services.size(); ++i) {
-        cout << i + 1 << ". " << Global::services[i].getName() << endl;
-    }
-    cout << "---------------------------------------------\n";
-    cout << "Введите номер или нажмите 0 для выхода: ";
-    int serviceChoice;
-    cin >> serviceChoice;
-
-    // Проверка выбранной услуги
-    if (serviceChoice == 0) {
-        return;
-    }
-
-    if (serviceChoice < 1 || serviceChoice > Global::services.size()) {
-        cout << "\nНеверный выбор услуги!" << endl;
-        return; // Prompt the user to try again
-    }
-
-    Service selectedService = Global::services[serviceChoice - 1];
-    cout << "---------------------------------------------\n";
-    cout << "Вы выбрали услугу: " << selectedService.getName();
-    cout << "\n---------------------------------------------";
-
-    // Заполнение даты записи
-    Data chosenDate;
-    cout << "\nВведите дату (дд мм гггг): ";
-    cin >> chosenDate;
-
-    while (!chosenDate.isValidDate()) {
-        cout << "Invalid date. Please re-enter date (dd mm yyyy): ";
-        cin >> chosenDate;
-        cin.clear();
-        cin.ignore(INT_MAX, '\n');
-    }
-
-    // Проверка доступных временных слотов для выбранной даты и услуги
-    vector<Time> availableTimes = findAvailableTimes(chosenDate, selectedService, Global::appointmentSlots);
-
-    if (availableTimes.empty()) {
-        cout << "На выбранную дату нет доступных временных слотов.\n";
-        //return user(login); // Return to user menu if no times are available
-    }
-
-    // Вывод доступных временных слотов
-    cout << "Доступные временные слоты для выбранной даты:\n";
-    for (int i = 0; i < availableTimes.size(); ++i) {
-        cout << i + 1 << ". " << availableTimes[i].getHour() << ":" << availableTimes[i].getMinute() << endl;
-    }
-
-    // Запрос номера временного слота
-    int timeChoice;
-    cout << "Выберите время (номер): ";
-    cin >> timeChoice;
-
-    // Проверка выбранного времени
-    if (timeChoice < 1 || timeChoice > availableTimes.size()) {
-        cout << "\nНеверный выбор времени.\n";
-        Global::authSystem.clientMenu(client);
-    }
-
-    Time chosenTime = availableTimes[timeChoice - 1];
-
-    // Проверка доступности временного слота
-    if (isTimeSlotBooked(chosenDate, chosenTime, selectedService)) {
-        cout << "Выбранное время уже занято. Пожалуйста, выберите другое время.\n";
-        Global::authSystem.clientMenu(client); // Prompt the user to select another time
-    }
-
-    // Установка даты и времени записи клиента
-     //Client newClient = findClientByLogin(newClient.getLogin(), Global::clients);
-     //client.setAppointmentDate(chosenDate);
-     //client.setAppointmentTime(chosenTime);
-
-    //saveUserAppointment(client, selectedService);
-
-    // Вывод информации о записи
-    cout << "---------------------------------------------\n";
-    cout << "Вы успешно записаны на " << selectedService.getName() << " к "
-        << selectedService.getMaster().getName() << " " << selectedService.getMaster().getSurname()
-        << " на " << chosenDate.getDay() << "/" << chosenDate.getMonth() << "/" << chosenDate.getYear()
-        << " в " << chosenTime.getHour() << ":" << chosenTime.getMinute() << "0" << endl;
-    cout << "---------------------------------------------\n";
-}*/

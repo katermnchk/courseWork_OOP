@@ -79,7 +79,7 @@ void loadClientsFromFile(vector<Client> clients) {
         string login, name, surname, phone;
         Master mast;
         Data birthday;
-        string password = "***";
+        string password = "";
         bool flag = false;//флаг для считывания даты рождения
         bool flagService = false;//флаг для считывания услуги
         while (getline(file, line))
@@ -141,7 +141,6 @@ void loadClientsFromFile(vector<Client> clients) {
         cout << "Файл с клиентами не найден." << endl;
     }
 }
-
 void writeLoginToFile(const string& login) {
     ofstream file("logins.txt", ios::app);
     if (file.is_open())
@@ -263,6 +262,7 @@ void saveAdminCredentials(const string& login, const string& password) {
         cout << "Ошибка открытия файла для записи." << endl;
     }
 }
+
 
 void saveClientsToFile(vector<Client> clients) {
     ofstream file("clients.txt");
@@ -435,6 +435,40 @@ Data getBirthday(const string& login) {
         file.close();
     }
     return {}; // если логин не найден
+}
+
+void saveDiscountToFile(const string& serviceName, int discount) {
+    ofstream file("discounts.txt", ios::app);
+    if (file.is_open()) {
+        file << serviceName << ":" << discount << endl;
+        file.close();
+    }
+    else {
+        cerr << "Ошибка: не удалось открыть файл для записи скидки.\n";
+    }
+}
+int getDiscountFromFile(const string& serviceName) {
+    ifstream file("discounts.txt");
+    if (!file.is_open()) {
+        cerr << "Ошибка: не удалось открыть файл для чтения скидок.\n";
+        return 0;
+    }
+
+    string line, name;
+    int discount;
+    while (getline(file, line)) {
+        size_t delimiterPos = line.find(':');
+        if (delimiterPos != string::npos) {
+            name = line.substr(0, delimiterPos);
+            discount = stoi(line.substr(delimiterPos + 1));
+            if (name == serviceName) {
+                file.close();
+                return discount;
+            }
+        }
+    }
+    file.close();
+    return 0; // Скидка не найдена
 }
 
 

@@ -12,6 +12,7 @@ namespace Global {
     Authentication authSystem;
     vector<Service> services;
     vector<Role::Client> clients;
+    //vector<shared_ptr<Client>> Global::clients;
     vector<Role::Admin> admins;
     vector<Shedule> appointmentSlots;
 }
@@ -45,9 +46,11 @@ int mainMenu() {
     }
     system("cls");
     switch (choice_role) {
-        case 1: return registration();
-        case 2: return enter();
-        case 0: return -1;
+        case 1: return registration(); 
+                break;
+        case 2: return enter(); 
+                break;
+        case 0: break;
     }
     return 0;
 }

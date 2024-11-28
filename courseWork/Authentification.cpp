@@ -104,26 +104,27 @@ int Authentication::loginMenu() {
     cout << "|1 - Log in as a regular user                   |\n";
     cout << "|2 - Log in as an administrator                 |\n";
     cout << "|3 - Log in as super administrator              |\n";
-    cout << "|4 - Exit to the main menu                      |\n";
+    cout << "|0 - Exit to the main menu                      |\n";
     cout << "+-----------------------------------------------+\n";
     cout << "Your choice: ";
     cin >> choice;
-    choice = checkMenuChoice(choice, 1, 4);
+    choice = checkMenuChoice(choice, 0, 3);
     switch (choice) {
     case 1:
         system("cls");
         return authenticateClient();
-        
+        break;
     case 2:
         system("cls");
         return authenticateAdmin();
-       
+        break;
     case 3:
         system("cls");
         return authenticateSuperAdmin();
-        
-    case 4:
+        break;
+    case 0:
         return mainMenu();
+        break;
     default:
         cout << "Invalid choice.\n";
     }

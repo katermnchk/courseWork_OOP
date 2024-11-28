@@ -297,6 +297,7 @@ namespace Role {
 		//void viewUserRecords(const vector<shared_ptr<Client>>& clients) const;
 		void displayTopPopularServices(const vector<Client> clients) const;
 		void viewReviews(const vector<string>& reviews) const;
+		void setDiscounts(vector<Service>& services);
 	};
 
 	class SuperAdmin : public Admin {

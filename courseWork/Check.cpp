@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "Classes.h"
 #include <fstream>
+#include <sstream> 
 #include <time.h>
 
 using namespace Role;
@@ -152,5 +153,42 @@ shared_ptr<SuperAdmin> checkSeniorAdminCredentials(const string& login, const st
 }
 
 bool isTimeSlotBooked(const Data& date, const Time& time, const Service& service) {
-    return false;
+    ifstream appointmentFile("user_appointments.txt");
+    if (!appointmentFile.is_open()) {
+        cerr << "Ошибка открытия файла с записями.\n";
+        return false; // Если файл не доступен, считаем слот свободным
+    }
+
+    string line, serviceName, masterName;
+    int day, month, year, hour, minute;
+
+    while (getline(appointmentFile, line)) {
+        // Считываем данные из файла
+        if (line.rfind("Услуга: ", 0) == 0) {
+            serviceName = line.substr(8); // Убираем "Услуга: "
+        }
+        else if (line.rfind("Мастер: ", 0) == 0) {
+            masterName = line.substr(8); // Убираем "Мастер: "
+        }
+        else if (line.rfind("Дата: ", 0) == 0) {
+            istringstream dateStream(line.substr(6)); // Убираем "Дата: "
+            char slash;
+            dateStream >> day >> slash >> month >> slash >> year;
+        }
+        else if (line.rfind("Время: ", 0) == 0) {
+            istringstream timeStream(line.substr(7)); // Убираем "Время: "
+            char colon;
+            timeStream >> hour >> colon >> minute;
+
+            // Проверяем совпадение услуги, даты и времени
+            if (serviceName == service.getName() &&
+                date == Data(day, month, year) &&
+                time == Time(hour, minute)) {
+                return true; // Слот уже занят
+            }
+        }
+    }
+
+    appointmentFile.close();
+    return false; // Слот свободен
 }

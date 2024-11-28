@@ -4,10 +4,12 @@
 #include <iomanip>
 #include <fstream>
 
+
+
 using namespace Role;
 
 int Authentication::adminMenu(shared_ptr<Admin>& currentAdmin) {
-    int choice = 0;
+    int choice;
     do {
         cout << "+--------------------------------------------+\n";
         cout << "|             МЕНЮ АДМИНИСТРАТОРА            |\n";
@@ -18,11 +20,13 @@ int Authentication::adminMenu(shared_ptr<Admin>& currentAdmin) {
         cout << "|4 - Удалить услугу                          |\n";
         cout << "|5 - Просмотреть записи пользователей        |\n";
         cout << "|6 - Вывести топ популярных процедур         |\n";
+        cout << "|7 - Установить скидки                       |\n";
         cout << "|0 - Выйти в главное меню                    |\n";
         cout << "+--------------------------------------------+\n";
         cout << "Ваш выбор: ";
         cin >> choice;
-        choice = checkMenuChoice(choice, 0, 6);
+
+        choice = checkMenuChoice(choice, 0, 7);
 
         switch (choice) {
         case 1:
@@ -43,16 +47,17 @@ int Authentication::adminMenu(shared_ptr<Admin>& currentAdmin) {
         case 6:
             currentAdmin->displayTopPopularServices(Global::clients);
             break;
+        case 7:
+            currentAdmin->setDiscounts(Global::services);
+            break;
         case 0:
-            cout << "Выход в главное меню...\n";
+            cout << "Exiting admin menu\n";
             system("cls");
             return mainMenu();
-        default:
-            cout << "Ошибка! Неверный выбор.\n";
             break;
         }
     } while (choice != 0);
-    return mainMenu();
+    return 0;
 }
 
 void Admin::addService(vector<Service> services) {
@@ -103,23 +108,59 @@ void Admin::addService(vector<Service> services) {
 }
 
 void Admin::displayServices() {
-    cout << "+------------------------------------------------------------------------------------------------------------------------------+" << endl;
-    cout << "|                                                         Каталог процедур                                                     |" << endl;
-    cout << "+-----+-------------------------+-------------------------------------+----------+---------------+-----------------------------+" << endl;
-    cout << "| №   | " << setw(24) << left << "Название" << "|" << setw(37) << left << "Информация" << "|"
-        << setw(10) << left << "Стоимость" << "|" << setw(15) << left << "Длительность" << "|"
-        << setw(29) << left << "Мастер" << "|" << endl;
-    cout << "+-----+-------------------------+-------------------------------------+----------+---------------+-----------------------------+" << endl;
+    const int col1Width = 5;   // Ширина для номера
+    const int col2Width = 25; // Ширина для названия
+    const int col3Width = 35; // Ширина для информации
+    const int col4Width = 25; // Ширина для стоимости
+    const int col5Width = 11; // Ширина для длительности
+    const int col6Width = 28; // Ширина для мастера
 
-    for (size_t i = 0; i < Global::services.size(); ++i)
-    {
-        cout << "| " << setw(3) << left << i + 1 << " |" << setw(25) << left << Global::services[i].getName() << "|"
-            << setw(37) << left << Global::services[i].getInfo() << "|"
-            << setw(6) << left << Global::services[i].getPrice() << "BYN |"
-            << setw(11) << left << Global::services[i].getDuration() << "мин |"
-            << setw(15) << left << Global::services[i].getMaster().getName() << " " << setw(13) << left
-            << Global::services[i].getMaster().getSurname() << "|" << endl;
-        cout << "+-----+-------------------------+-------------------------------------+----------+---------------+-----------------------------+" << endl;
+    // Заголовок таблицы
+    cout << "+-----+-------------------------+-----------------------------------+-------------------------+---------------+-----------------------------+" << endl;
+    cout << "| №   | Название                | Информация                        | Стоимость               | Длительность  | Мастер                      |" << endl;
+    cout << "+-----+-------------------------+-----------------------------------+-------------------------+---------------+-----------------------------+" << endl;
+
+    for (size_t i = 0; i < Global::services.size(); ++i) {
+        const auto& service = Global::services[i];
+        int discount = getDiscountFromFile(service.getName());
+        int originalPrice = (discount > 0) ? service.getPrice() * 100 / (100 - discount) : service.getPrice();
+
+        // Формируем строки стоимости с двумя знаками после запятой
+        string priceCurrent = to_string(service.getPrice());
+        priceCurrent = priceCurrent.substr(0, priceCurrent.find('.') + 3); 
+        priceCurrent += " BYN";
+
+        string priceOriginal = "";
+        if (discount > 0) {
+            string originalPriceStr = to_string(originalPrice);
+            originalPriceStr = originalPriceStr.substr(0, originalPriceStr.find('.') + 3); 
+            setColor("31"); // Красный цвет для скидки
+            priceOriginal = "(Было: " + originalPriceStr + " BYN, -" + to_string(discount) + "%)";  resetColor();
+        }
+
+        // Разбиваем строки, если они слишком длинные
+        string serviceInfo = service.getInfo();
+        if (serviceInfo.length() > col3Width - 1) {
+            serviceInfo = serviceInfo.substr(0, col3Width - 4) + "...";
+        }
+
+        // Вывод услуги в первую строку
+        cout << "| " << setw(col1Width - 1) << left << i + 1
+            << "| " << setw(col2Width - 1) << left << service.getName()
+            << "| " << setw(col3Width - 1) << left << serviceInfo
+            << "| " << setw(col4Width - 1) << left << priceCurrent
+            << "| " << setw(col5Width - 1) << left << service.getDuration() << " мин"
+            << "| " << setw(col6Width - 1) << left << service.getMaster().getName() + " " + service.getMaster().getSurname()
+            << " |" << endl;
+
+        // Вывод второй строки для скидки, если она есть
+        if (!priceOriginal.empty()) {
+           
+            cout << "|     |                         |                                   | " << setw(col4Width - 1) << left << priceOriginal
+                << "|               |" << endl;
+        }
+
+        cout << "+-----+-------------------------+-----------------------------------+-------------------------+---------------+-----------------------------+" << endl;
     }
 }
 
@@ -365,6 +406,63 @@ void Admin::viewReviews(const vector<string>& reviews) const//показать отзывы по
     }
 }
 
+void Admin::setDiscounts(vector<Service>& services) {
+    cout << "+-----------------------------------------------+\n";
+    cout << "|                 Установка скидок              |\n";
+    cout << "+-----------------------------------------------+\n";
+    if (services.empty()) {
+        cout << "Нет доступных услуг для установки скидки.\n";
+        return;
+    }
+
+    // Отобразить все услуги
+    cout << "+-----+-------------------------+----------+\n";
+    cout << "| №   | " << setw(24) << left << "Название" << "|"
+        << setw(10) << left << "Стоимость" << "|\n";
+    cout << "+-----+-------------------------+----------+\n";
+    for (size_t i = 0; i < services.size(); ++i) {
+        cout << "| " << setw(3) << left << i + 1 << " |"
+            << setw(25) << left << services[i].getName() << "|"
+            << setw(6) << left << services[i].getPrice() << " BYN |\n";
+    }
+    cout << "+-----+-------------------------+----------+\n";
+
+    // Запрос выбора услуги
+    int serviceIndex;
+    cout << "Введите номер услуги для установки скидки: ";
+    cin >> serviceIndex;
+    while (cin.fail() || serviceIndex < 1 || serviceIndex > services.size()) {
+        cout << "Ошибка! Введите корректный номер услуги: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin >> serviceIndex;
+    }
+
+    int discount;
+    cout << "Введите размер скидки в процентах (от 1 до 100): ";
+    cin >> discount;
+    while (cin.fail() || discount < 1 || discount > 100) {
+        cout << "Ошибка! Введите корректное значение (от 1 до 100): ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin >> discount;
+    }
+
+    int oldPrice = services[serviceIndex - 1].getPrice();
+    int newPrice = oldPrice - (oldPrice * discount / 100);
+    services[serviceIndex - 1].setPrice(newPrice);
+
+    saveServicesToFile(services);
+    saveDiscountToFile(services[serviceIndex - 1].getName(), discount);
+
+
+    cout << "\n+-----------------------------------------------+\n";
+    cout << "|        Скидка успешно установлена!            |\n";
+    cout << "+-----------------------------------------------+\n";
+    cout << "Новая цена услуги \"" << services[serviceIndex - 1].getName()
+        << "\": " << newPrice << " BYN (скидка " << discount << "%)\n";
+}
+
 int adminRegistration(const string& login, const string& password) {
     vector<Client> clients;
     string name, surname, phone;
@@ -443,5 +541,16 @@ int authenticateAdmin() {
             return mainMenu();
         }
     }
-    return mainMenu();
+   // return mainMenu();
+}
+
+
+
+
+void setColor(const string& colorCode) {
+    cout << "\033[" << colorCode << "m"; // ANSI escape code
+}
+
+void resetColor() {
+    cout << "\033[0m"; // Сброс цвета
 }

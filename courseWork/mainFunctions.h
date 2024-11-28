@@ -39,6 +39,7 @@ void saveServicesToFile(const vector<Service>& services);
 void loadServicesFromFile(vector<Service> services);
 void loadClientsFromFile(vector<Client> clients);
 
+
 shared_ptr<Client> checkUserCredentials(const string& login, const string& password);
 shared_ptr<Admin>  checkAdminCredentials(const string& login, const string& password);
 shared_ptr<SuperAdmin> checkSeniorAdminCredentials(const string& login, const string& password);
@@ -56,3 +57,9 @@ void madeAppointment(shared_ptr<Client>& currentClient);
 
 int filterServices(shared_ptr<Client>& currentClient);
 vector<Time> findAvailableTimes(const Data& chosenDate, const Service& selectedService, const vector<Shedule>& appointmentSlots);
+
+void saveDiscountToFile(const string& serviceName, int discount);
+int getDiscountFromFile(const string& serviceName);
+
+void setColor(const string& colorCode);
+void resetColor();
