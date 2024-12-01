@@ -15,7 +15,7 @@ void firstUsing() {
     if (file.is_open()) {
         if (file.peek() == ifstream::traits_type::eof()) { 
             cout << "+--------------------------------------------------------------------------------------------+\n";
-            cout << "|                                Hello, dear administrator!                                  |\n";
+            cout << "|                       Добро пожаловать, старший администратор                              |\n";
             cout << "+--------------------------------------------------------------------------------------------+\n";
             cout << "| In front of you is an information system for recording procedures in your cosmetic salon   |\n";
             cout << "| Please log in to the program!                                                              |\n";

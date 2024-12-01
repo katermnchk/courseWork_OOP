@@ -51,7 +51,7 @@ int Authentication::adminMenu(shared_ptr<Admin>& currentAdmin) {
             currentAdmin->setDiscounts(Global::services);
             break;
         case 0:
-            cout << "Exiting admin menu\n";
+            cout << "Выход в главное меню\n";
             system("cls");
             return mainMenu();
             break;
@@ -108,14 +108,13 @@ void Admin::addService(vector<Service> services) {
 }
 
 void Admin::displayServices() {
-    const int col1Width = 5;   // Ширина для номера
-    const int col2Width = 25; // Ширина для названия
-    const int col3Width = 35; // Ширина для информации
-    const int col4Width = 25; // Ширина для стоимости
-    const int col5Width = 11; // Ширина для длительности
-    const int col6Width = 28; // Ширина для мастера
+    const int col1Width = 5;   // ширина для номера
+    const int col2Width = 25; // ширина для названия
+    const int col3Width = 35; // ширина для информации
+    const int col4Width = 25; // ширина для стоимости
+    const int col5Width = 11; // ширина для длительности
+    const int col6Width = 28; // ширина для мастера
 
-    // Заголовок таблицы
     cout << "+-----+-------------------------+-----------------------------------+-------------------------+---------------+-----------------------------+" << endl;
     cout << "| №   | Название                | Информация                        | Стоимость               | Длительность  | Мастер                      |" << endl;
     cout << "+-----+-------------------------+-----------------------------------+-------------------------+---------------+-----------------------------+" << endl;
@@ -125,7 +124,7 @@ void Admin::displayServices() {
         int discount = getDiscountFromFile(service.getName());
         int originalPrice = (discount > 0) ? service.getPrice() * 100 / (100 - discount) : service.getPrice();
 
-        // Формируем строки стоимости с двумя знаками после запятой
+        // с двумя знаками после запятой
         string priceCurrent = to_string(service.getPrice());
         priceCurrent = priceCurrent.substr(0, priceCurrent.find('.') + 3); 
         priceCurrent += " BYN";
@@ -134,17 +133,17 @@ void Admin::displayServices() {
         if (discount > 0) {
             string originalPriceStr = to_string(originalPrice);
            // originalPriceStr = originalPriceStr.substr(0, originalPriceStr.find('.') + 3); 
-            setColor("31"); // Красный цвет для скидки
+            setColor("31"); // красный цвет для скидки
             priceOriginal = "(Было: " + originalPriceStr + " BYN, -" + to_string(discount) + "%)";  resetColor();
         }
 
-        // Разбиваем строки, если они слишком длинные
+        // если строки слишком длинные
         string serviceInfo = service.getInfo();
         if (serviceInfo.length() > col3Width - 1) {
             serviceInfo = serviceInfo.substr(0, col3Width - 4) + "...";
         }
 
-        // Вывод услуги в первую строку
+        //в первую строку
         cout << "| " << setw(col1Width - 1) << left << i + 1
             << "| " << setw(col2Width - 1) << left << service.getName()
             << "| " << setw(col3Width - 1) << left << serviceInfo
@@ -153,7 +152,7 @@ void Admin::displayServices() {
             << "| " << setw(col6Width - 1) << left << service.getMaster().getName() + " " + service.getMaster().getSurname()
             << " |" << endl;
 
-        // Вывод второй строки для скидки, если она есть
+        // вывод второй строки для скидки
         if (!priceOriginal.empty()) {
            
             cout << "|     |                         |                                   | " << setw(col4Width - 1) << left << priceOriginal
@@ -178,15 +177,16 @@ void Admin::editService(vector<Service>& services)
         string newName, newInfo, newMasterName, newMasterSurname;
         int newPrice, newDuration;
         int choice;
-        cout << "-----------------------------------------------\n";
-        cout << "Что вы хотите изменить?\n";
-        cout << "1 - Название услуги\n";
-        cout << "2 - Информацию об услуге\n";
-        cout << "3 - Стоимость услуги\n";
-        cout << "4 - Длительность услуги\n";
-        cout << "5 - Мастера\n";
-        cout << "0 - Отмена\n";
-        cout << "-----------------------------------------------\n";
+        cout << "+---------------------------------------------+\n";
+        cout << "|           Что вы хотите изменить?           |\n";
+        cout << "+---------------------------------------------+\n";
+        cout << "|1 - Название услуги                          |\n";
+        cout << "|2 - Информацию об услуге                     |\n";
+        cout << "|3 - Стоимость услуги                         |\n";
+        cout << "|4 - Длительность услуги                      |\n";
+        cout << "|5 - Мастера                                  |\n";
+        cout << "|0 - Отмена                                   |\n";
+        cout << "+---------------------------------------------+\n";
         cout << "Ваш выбор: ";
         cin >> choice;
         while (cin.fail() || choice < 0 || choice > 5)//проверка
@@ -250,7 +250,7 @@ void Admin::editService(vector<Service>& services)
             break;
         default:
             cout << "-----------------------------------------------\n";
-            cout << "Изменение отменено.\n";
+            cout << "Изменение отменено\n";
             cout << "-----------------------------------------------\n";
             return;
         }
@@ -262,7 +262,7 @@ void Admin::editService(vector<Service>& services)
     }
     else
     {
-        cout << "Неверный номер услуги.\n";
+        cout << "Неверный номер услуги\n";
     }
 }
 
@@ -305,7 +305,7 @@ void Admin::deleteService(vector<Service> services) {
     }
     else
     {
-        cout << "Неверный номер услуги.\n";
+        cout << "Неверный номер услуги\n";
     }
 }
 
@@ -326,7 +326,7 @@ void Admin::viewUserRecords() const {
         file.close();
     }
     else {
-        cout << "Ошибка открытия файла с записями пользователей." << endl;
+        cout << "Ошибка открытия файла с записями пользователей" << endl;
     }
 
     // Чтение победителей конкурса
@@ -341,7 +341,7 @@ void Admin::viewUserRecords() const {
         winnersFile.close();
     }
     else {
-        cout << "Ошибка открытия файла с победителями конкурса." << endl;
+        cout << "Ошибка открытия файла с победителями конкурса" << endl;
     }
 }
 
@@ -399,7 +399,7 @@ void Admin::displayTopPopularServices(const vector<Client> clients) const
         cout << "-------------------------------------------------\n";
     }
     else {
-        cout << "Ошибка открытия файла с записями пользователей." << endl;
+        cout << "Ошибка открытия файла с записями пользователей" << endl;
     }
 }
 
@@ -427,11 +427,10 @@ void Admin::setDiscounts(vector<Service>& services) {
     cout << "|                 Установка скидок              |\n";
     cout << "+-----------------------------------------------+\n";
     if (services.empty()) {
-        cout << "Нет доступных услуг для установки скидки.\n";
+        cout << "Нет доступных услуг для установки скидки\n";
         return;
     }
 
-    // Отобразить все услуги
     cout << "+-----+-------------------------+----------+\n";
     cout << "| №   | " << setw(24) << left << "Название" << "|"
         << setw(10) << left << "Стоимость" << "|\n";
@@ -443,7 +442,6 @@ void Admin::setDiscounts(vector<Service>& services) {
     }
     cout << "+-----+-------------------------+----------+\n";
 
-    // Запрос выбора услуги
     int serviceIndex;
     cout << "Введите номер услуги для установки скидки: ";
     cin >> serviceIndex;
@@ -484,31 +482,33 @@ int adminRegistration(const string& login, const string& password) {
     string name, surname, phone;
     Data birthday;
 
-    cout << "Please enter your name: ";
+    //ввод данных на случай если старший админ отклонит заявку и пользователь останется обычным клиентом
+    cout << "Введите ваше имя: ";
     cin >> ws;
     getline(cin, name);
-    cout << "Please etner your surname: ";
+    cout << "Введите вашу фамилию: ";
     getline(cin, surname);
-    cout << "Please etner your phone: +";
+    cout << "Введите ваш номер телефона : +";
     while (true) {
         cin >> phone;
         if (isValidPhoneNumber(phone)) {
             break;
         }
         else {
-            cout << "Error! The phone number must contain exactly 12 digits. Repeat the entry: +";
+            cout << "Ошибка! TНомер телефона должен состоять ровно из 12 цифр. Повторите ввод: +";
         }
     }
-    cout << "Enter your birth date (dd mm yyyy): ";
+    cout << "Введите вашу дату рождения (dd mm yyyy): ";
     while (true) {
         cin >> birthday;
         if (cin.fail() || !birthday.isValidDate()) {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "Invalid date. Please enter a valid date (dd mm yyyy): ";
+            cout << "Неверный ввод. Пожалуйста введите корректную дату (dd mm yyyy): ";
         }
         else if (!isAdult(birthday, 18)) {
-            cout << "Administrator registration is only available for users aged 18 or older. Sorry...\n";
+            cout << "К сожалению, регистрация администратора доступна лицам старше 18 лет." << 
+                "Если вам уже есть 14 лет, вы модеет зарегистрироваться в качестве клиента!\n";
             return mainMenu();
         }
         else {
@@ -535,25 +535,25 @@ int adminRegistration(const string& login, const string& password) {
 int authenticateAdmin() {
     vector<shared_ptr<Service>> services;
     cout << "+-----------------------------------------------+\n";
-    cout << "|                     Log in                    |\n";
+    cout << "|              ВХОД  АДМИНИСТРАТОРА             |\n";
     cout << "+-----------------------------------------------+\n";
     string login;
-    cout << "Enter your login: ";
+    cout << "Введите логин: ";
     cin >> login;
-    cout << "Enter your password: ";
+    cout << "Введите пароль: ";
     string password = getHiddenInput();
     while (true)
     {
         shared_ptr<Admin> currentAdmin = checkAdminCredentials(login, password);
         if (currentAdmin) {
-            cout << "\nYou are logged in as a regular user!" << endl;
+            cout << "\nВыполнен вход администратора!" << endl;
             _getch();
             system("cls");
             Global::authSystem.adminMenu(currentAdmin);
             break;
         }
         else {
-            cout << "\nInvalid login or password. Try again." << endl;
+            cout << "\nНеверный логин или пароль. Попробуйте еще раз" << endl;
             return mainMenu();
         }
     }
@@ -564,9 +564,9 @@ int authenticateAdmin() {
 
 
 void setColor(const string& colorCode) {
-    cout << "\033[" << colorCode << "m"; // ANSI escape code
+    cout << "\033[" << colorCode << "m"; // ANSI
 }
 
 void resetColor() {
-    cout << "\033[0m"; // Сброс цвета
+    cout << "\033[0m"; // сброс цвета
 }

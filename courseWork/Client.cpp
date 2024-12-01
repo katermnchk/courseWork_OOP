@@ -6,6 +6,8 @@
 #include <vector>
 #include <conio.h>
 #include <fstream>
+#include <chrono>//для даты
+#include <ctime>
 #define GRAY_TEXT "\033[90m"
 #define RESET_TEXT "\033[0m"
 
@@ -19,18 +21,18 @@ inline void printSeparator() {
 int Authentication::clientMenu(shared_ptr<Client>& currentClient) {
     int choice;
     do {
-        cout << "\n+--------------------------------------------+\n";
-        cout << "|              МЕНЮ ПОЛЬЗОВАТЕЛЯ             |\n";
-        cout << "+--------------------------------------------+\n";
-        cout << "|1 - Просмотреть список услуг                |\n";
-        cout << "|2 - Записаться к мастеру                    |\n";
-        cout << "|3 - Фильтрация данных                       |\n";
-        cout << "|4 - Поиск информации о процедуре            |\n";
-        cout << "|5 - Изменение профиля                       |\n";
-        cout << "|6 - Оставить отзыв                          |\n";
-        cout << "|7 - Просмотреть свой профиль                |\n";
-        cout << "|0 - Выйти в главное меню                    |\n";
-        cout << "+--------------------------------------------+\n";
+        printSeparator();
+        cout << "|              МЕНЮ ПОЛЬЗОВАТЕЛЯ            |\n";
+        printSeparator();
+        cout << "|1 - Просмотреть список услуг               |\n";
+        cout << "|2 - Записаться к мастеру                   |\n";
+        cout << "|3 - Фильтрация данных                      |\n";
+        cout << "|4 - Поиск информации о процедуре           |\n";
+        cout << "|5 - Изменение профиля                      |\n";
+        cout << "|6 - Оставить отзыв                         |\n";
+        cout << "|7 - Просмотреть свой профиль               |\n";
+        cout << "|0 - Выйти в главное меню                   |\n";
+        printSeparator();
         cout << "Ваш выбор: ";
         cin >> choice;
 
@@ -58,12 +60,8 @@ int Authentication::clientMenu(shared_ptr<Client>& currentClient) {
         case 7:
             currentClient->viewProfile();
             break;
-       /* case 8:
-            participateInContest(currentClient);
-            cout << "Желаете ли вы принять участие в конкурсе и получить сикдку на процедуру?";
-            break;*/
         case 0:
-            cout << "Exiting client menu.\n";
+            cout << "Выход из меню клиента\n";
             system("cls");
             return mainMenu();
             break;
@@ -81,13 +79,9 @@ int displayServicesWithSort(shared_ptr<Client>& currentClient) {
     cout << endl << "Ваш выбор: ";
     int choiceDisp;
     cin >> choiceDisp;
-    while (cin.fail() || choiceDisp < 1 || choiceDisp > 2)
-    {
-        cout << "Ошибка! Введите корректное значение: ";
-        cin.clear();
-        cin.ignore(INT_MAX, '\n');
-        cin >> choiceDisp;
-    }
+
+    choiceDisp = checkMenuChoice(choiceDisp, 1, 2);
+
     switch (choiceDisp)
     {
     case 1:
@@ -102,13 +96,8 @@ int displayServicesWithSort(shared_ptr<Client>& currentClient) {
         cout << "Ваш выбор: ";
         cin >> sortChoice;
 
-        while (cin.fail() || sortChoice < 1 || sortChoice > 3)
-        {
-            cout << "Ошибка! Введите корректное значение: ";
-            cin.clear();
-            cin.ignore(INT_MAX, '\n');
-            cin >> sortChoice;
-        }
+        sortChoice = checkMenuChoice(sortChoice, 1, 3);
+
         switch (sortChoice)
         {
         case 1:
@@ -143,14 +132,13 @@ void Client::showServices() {
     showServices(Global::services); //перегруженный метод для всех услуг
 }
 void Client::showServices(const vector<Service>& services) {
-    const int col1Width = 5;   // Ширина для номера
-    const int col2Width = 25; // Ширина для названия
-    const int col3Width = 35; // Ширина для информации
-    const int col4Width = 25; // Ширина для стоимости
-    const int col5Width = 11; // Ширина для длительности
-    const int col6Width = 28; // Ширина для мастера
+    const int col1Width = 5;   // ширина для номера
+    const int col2Width = 25; // ширина для названия
+    const int col3Width = 35; // ширина для информации
+    const int col4Width = 25; // ширина для стоимости
+    const int col5Width = 11; // ширина для длительности
+    const int col6Width = 28; // ширина для мастера
 
-    // Заголовок таблицы
     cout << "+-----+-------------------------+-----------------------------------+-------------------------+---------------+-----------------------------+" << endl;
     cout << "| №   | Название                | Информация                        | Стоимость               | Длительность  | Мастер                      |" << endl;
     cout << "+-----+-------------------------+-----------------------------------+-------------------------+---------------+-----------------------------+" << endl;
@@ -160,7 +148,7 @@ void Client::showServices(const vector<Service>& services) {
         int discount = getDiscountFromFile(service.getName());
         int originalPrice = (discount > 0) ? service.getPrice() * 100 / (100 - discount) : service.getPrice();
 
-        // Формируем строки стоимости с двумя знаками после запятой
+        //строки стоимости с двумя знаками после запятой
         string priceCurrent = to_string(service.getPrice());
         priceCurrent = priceCurrent.substr(0, priceCurrent.find('.') + 3);
         priceCurrent += " BYN";
@@ -169,17 +157,17 @@ void Client::showServices(const vector<Service>& services) {
         if (discount > 0) {
             string originalPriceStr = to_string(originalPrice);
             // originalPriceStr = originalPriceStr.substr(0, originalPriceStr.find('.') + 3); 
-            setColor("31"); // Красный цвет для скидки
+            setColor("31"); // красный цвет для скидки
             priceOriginal = "(Было: " + originalPriceStr + " BYN, -" + to_string(discount) + "%)";  resetColor();
         }
 
-        // Разбиваем строки, если они слишком длинные
+        // если строки слишком длинные
         string serviceInfo = service.getInfo();
         if (serviceInfo.length() > col3Width - 1) {
             serviceInfo = serviceInfo.substr(0, col3Width - 4) + "...";
         }
 
-        // Вывод услуги в первую строку
+        // в первую строку
         cout << "| " << setw(col1Width - 1) << left << i + 1
             << "| " << setw(col2Width - 1) << left << service.getName()
             << "| " << setw(col3Width - 1) << left << serviceInfo
@@ -188,7 +176,7 @@ void Client::showServices(const vector<Service>& services) {
             << "| " << setw(col6Width - 1) << left << service.getMaster().getName() + " " + service.getMaster().getSurname()
             << " |" << endl;
 
-        // Вывод второй строки для скидки, если она есть
+        // вывод второй строки для скидки
         if (!priceOriginal.empty()) {
 
             cout << "|     |                         |                                   | " << setw(col4Width - 1) << left << priceOriginal
@@ -202,7 +190,7 @@ void Client::showServices(const vector<Service>& services) {
 
 void madeAppointment(shared_ptr<Client>& currentClient) {
     while (true) {
-        // Вывод списка услуг
+
         cout << "\n+-------------------------------------------+\n";
         cout << "|           Запись на процедуру             |\n";
         cout << "+-------------------------------------------+\n";
@@ -216,56 +204,64 @@ void madeAppointment(shared_ptr<Client>& currentClient) {
         int serviceChoice;
         cin >> serviceChoice;
 
-        // Проверка корректности ввода
-        if (cin.fail() || serviceChoice < 0 || serviceChoice > Global::services.size()) {
-            cout << "Ошибка! Введите корректный номер услуги.\n";
-            cin.clear();
-            cin.ignore(INT_MAX, '\n');
-            continue;
-        }
+        serviceChoice = checkMenuChoice(serviceChoice, 0, Global::services.size());
+
         if (serviceChoice == 0) {
-            return; // Выход из функции
+            return; // выход из функции
         }
 
-        // Выбор услуги
         Service selectedService = Global::services[serviceChoice - 1];
         cout << "Вы выбрали услугу: " << selectedService.getName() << "\n";
 
-        // Ввод даты
         Data chosenDate;
         while (true) {
             cout << "Введите дату (дд мм гггг): ";
             cin >> chosenDate;
 
             if (!chosenDate.isValidDate()) {
-                cout << "Ошибка! Некорректная дата.\n";
+                cout << "Ошибка! Некорректная дата\n";
+                continue;
+            }
+
+            // получение текущей даты
+            auto now = chrono::system_clock::now();
+            time_t nowTime = chrono::system_clock::to_time_t(now);
+
+            tm currentTime;
+            localtime_s(&currentTime, &nowTime);
+            int currentDay = currentTime.tm_mday;
+            int currentMonth = currentTime.tm_mon + 1; //месяц начинается с 0
+            int currentYear = currentTime.tm_year + 1900; //год начинается с 1900....
+
+            //проверка, что дата не в прошлом
+            if (chosenDate.getYear() < currentYear ||
+                (chosenDate.getYear() == currentYear && chosenDate.getMonth() < currentMonth) ||
+                (chosenDate.getYear() == currentYear && chosenDate.getMonth() == currentMonth && chosenDate.getDay() < currentDay)) {
+                cout << "\nОшибка! Нельзя записаться на прошедший день\n\n";
                 continue;
             }
             break;
         }
-        // Поиск доступных временных слотов
+
         vector<Time> availableTimes = findAvailableTimes(chosenDate, selectedService, Global::appointmentSlots);
         if (availableTimes.empty()) {
-            cout << "На выбранную дату нет доступных временных слотов.\n";
+            cout << "К сожалению, на выбранную дату нет доступных временных слотов. Вы можете выбрать другую дату, мы работаем без выходных!\n";
             continue;
         }
 
-
-        // Вывод доступных временных слотов
         cout << "Доступные временные слоты:\n";
         for (size_t i = 0; i < availableTimes.size(); ++i) {
             cout << i + 1 << ". " << availableTimes[i].getHour() << ":"
                 << (availableTimes[i].getMinute() < 10 ? "0" : "") << availableTimes[i].getMinute() << endl;
         }
 
-        // Выбор времени
         int timeChoice;
         while (true) {
             cout << "Выберите время (номер): ";
             cin >> timeChoice;
 
             if (cin.fail() || timeChoice < 1 || timeChoice > availableTimes.size()) {
-                cout << "Ошибка! Введите корректный номер времени.\n";
+                cout << "Ошибка! Введите корректный номер времени\n";
                 cin.clear();
                 cin.ignore(INT_MAX, '\n');
                 continue;
@@ -275,22 +271,23 @@ void madeAppointment(shared_ptr<Client>& currentClient) {
 
         Time chosenTime = availableTimes[timeChoice - 1];
 
-        // Проверка доступности временного слота
+        // проверка доступности временного слота
         if (isTimeSlotBooked(chosenDate, chosenTime, selectedService)) {
-            cout << "Выбранное время уже занято. Попробуйте другое.\n";
+            cout << "К сожалению, выбранное время уже занято. Попробуйте другое\n";
             continue;
         }
 
-        // Добавление записи через setAppointment
-        currentClient->setAppointment(selectedService, chosenDate); // передаем услугу, дату и пустые детали
+        currentClient->setAppointment(selectedService, chosenDate); // передаем услугу и дату
         if (!currentClient) {
-            cout << "Ошибка: currentClient не инициализирован!\n";
+            cout << "currentClient не инициализирован\n";
         }
         else {
             cout << "currentClient инициализирован!\n";
             cout << "\n" << currentClient->getName() << "\n";
         }
-        // Подтверждение записи
+
+
+        // подтверждение записи
         cout << "---------------------------------------------\n";
         cout << "Вы успешно записаны на услугу: " << selectedService.getName() << endl;
         cout << "Дата: " << chosenDate.getDay() << "/" << chosenDate.getMonth() << "/"
@@ -299,7 +296,8 @@ void madeAppointment(shared_ptr<Client>& currentClient) {
             << (chosenTime.getMinute() < 10 ? "0" : "") << chosenTime.getMinute() << endl;
         cout << "---------------------------------------------\n";
         saveUserAppointment(currentClient, selectedService, chosenDate, chosenTime);
-        cout << "\n\nЖелаете ли вы принять участие в конкурсе и получить сикдку на процедуру? (1 - да, 2 - нет)\nВаш выбор: ";
+
+        cout << "\n\nЖелаете ли вы принять участие в конкурсе и получить скидку на процедуру? (1 - да, 2 - нет)\nВаш выбор: ";
         int choice = 0;
         cin >> choice;
         choice = checkMenuChoice(choice, 1, 2);
@@ -313,21 +311,21 @@ void madeAppointment(shared_ptr<Client>& currentClient) {
             }
         }
         else {
-            cout << "Спасибо, что выбрали нас !\n";
+            cout << "Спасибо, что выбрали нас!\n";
         }
         return;
     }
 }
 void Client::setAppointment(Service service, const Data& appointmentDate) {
     if (service.getName().empty()) {
-        cout << "Ошибка: Услуга не выбрана." << endl;
+        cout << "Ошибка: Услуга не выбрана" << endl;
         return;
     }
 
-    // Создаем новую запись
+    // создаем новую запись
     auto appointment = make_shared<Appointment>(service, appointmentDate);
 
-    // Добавляем запись в вектор appointments
+    // добавляем запись в вектор appointments
     appointments.push_back(appointment);
     
 
@@ -343,6 +341,7 @@ int filterServices(shared_ptr<Client>& currentClient) {
     cout << "Ваш выбор : ";
     int choiceFiltr;
     cin >> choiceFiltr;
+
     while (cin.fail() || choiceFiltr < 0 || choiceFiltr > 2) {
         cout << "Ошибка! Введите корректное значение: ";
         cin.clear();
@@ -357,6 +356,7 @@ int filterServices(shared_ptr<Client>& currentClient) {
     case 1:
         cout << "Введите минимальную цену (в BYN): ";
         cin >> minPrice;
+
         while (cin.fail()) {
             cout << "Ошибка! Введите корректное значение: ";
             cin.clear();
@@ -379,6 +379,7 @@ int filterServices(shared_ptr<Client>& currentClient) {
     case 2:
         cout << "Введите минимальное время (в минутах): ";
         cin >> minTime;
+
         while (cin.fail() || minTime < 0) {
             cout << "Ошибка! Введите корректное значение: ";
             cin.clear();
@@ -400,8 +401,8 @@ int filterServices(shared_ptr<Client>& currentClient) {
 
     case 0: return Global::authSystem.clientMenu(currentClient);
     }
-
-    return Global::authSystem.clientMenu(currentClient);
+        
+    //return Global::authSystem.clientMenu(currentClient);
 }
 void Client::filterAndShowServices(double minPrice, double maxPrice, int minTime, int maxTime, bool isPriceFilter) {
     vector<Service> filteredServices;
@@ -420,7 +421,7 @@ void Client::filterAndShowServices(double minPrice, double maxPrice, int minTime
     }
 
     if (filteredServices.empty()) {
-        cout << "Нет услуг в заданном диапазоне." << endl;
+        cout << "Нет услуг в заданном диапазоне" << endl;
     }
     else {
         showServices(filteredServices);
@@ -447,7 +448,7 @@ void Client::searchService() {
 
     if (foundServices.empty())
     {
-        cout << "Услуги с указанным названием не найдены." << endl;
+        cout << "Услуги с указанным названием не найдены" << endl;
     }
     else {
         showServices(foundServices);
@@ -456,12 +457,12 @@ void Client::searchService() {
 
 void Client::editProfile() {
     printSeparator();
-    cout << "|                 EDIT MENU                 |\n";
+    cout << "|             Меню редактирования             |\n";
     printSeparator();
-    cout << "| 1 - Name                                 |\n";
-    cout << "| 2 - Surname                              |\n";
-    cout << "| 3 - Date of birth                        |\n";
-    cout << "| 0 - Exit                                 |\n";
+    cout << "| 1 - Имя                                  |\n";
+    cout << "| 2 - Фамилия                              |\n";
+    cout << "| 3 - Дату рождения                        |\n";
+    cout << "| 0 - Выход                                 |\n";
     printSeparator();
 
     // Поиск клиента по логину
@@ -469,7 +470,7 @@ void Client::editProfile() {
         [this](const Client& client) { return client.getLogin() == login; });
 
     if (it == Global::clients.end()) {
-        cout << "Profile not found.\n";
+        cout << "Профиль не найден\n";
         return;
     }
 
@@ -477,11 +478,11 @@ void Client::editProfile() {
     int choice;
 
     do {
-        cout << "Your choice: ";
+        cout << "Пожалуйста, введите цифру того, что вы хотите отредактировать: ";
         cin >> choice;
 
         while (cin.fail() || choice < 0 || choice > 3) {
-            cout << "Invalid input! Please enter a correct option: ";
+            cout << "Неверный ввод! Пожалуйста введите корректное значение: ";
             cin.clear();
             cin.ignore(INT_MAX, '\n');
             cin >> choice;
@@ -491,45 +492,45 @@ void Client::editProfile() {
         case 1: {
             string newName;
             printSeparator();
-            cout << "Enter new name: ";
-            cin >> ws; // Очистка ввода
+            cout << "Введите новое имя: ";
+            cin >> ws; //очистка ввода
             getline(cin, newName);
             clientToEdit.setName(newName);
-            cout << "Name successfully updated!\n";
+            cout << "Имя успешно обновлено!\n";
             break;
         }
         case 2: {
             string newSurname;
             printSeparator();
-            cout << "Enter new surname: ";
-            cin >> ws; // Очистка ввода
+            cout << "Введите новую фамилию: ";
+            cin >> ws; 
             getline(cin, newSurname);
             clientToEdit.setSurname(newSurname);
-            cout << "Surname successfully updated!\n";
+            cout << "Фамилия успешно обновлена!\n";
             break;
         }
         case 3: {
             Data newBirthday;
             printSeparator();
-            cout << "Enter new date of birth (dd mm yyyy): ";
+            cout << "Введите новую дату рождения (dd mm yyyy): ";
             cin >> newBirthday;
             if (cin.fail()) {
                 cin.clear();
                 cin.ignore(INT_MAX, '\n');
-                cout << "Invalid date format! Try again.\n";
+                cout << "Неверный формат! Пожалуйста, попробуйте еще\n";
                 break;
             }
             clientToEdit.setBirthday(newBirthday);
-            cout << "Date of birth successfully updated!\n";
+            cout << "Дата рождения успешно обновлена!\n";
             break;
         }
         case 0:
             printSeparator();
-            cout << "Exiting profile editing.\n";
+            cout << "Выход в меню клиента\n";
             printSeparator();
             break;
         default:
-            cout << "Invalid choice.\n";
+            cout << "Неверный выбор\n";
             break;
         }
 
@@ -539,7 +540,7 @@ void Client::editProfile() {
     } while (choice != 0);
 
     cout << "+-------------------------------------------+\n";
-    cout << "User profile successfully updated!\n";
+    cout << "Профиль клиента успешно обновлен!\n";
     cout << "+-------------------------------------------+\n";
 }
 
@@ -547,7 +548,7 @@ void Client::viewProfile() {
     ifstream appointmentsFile("user_appointments.txt");
     if (!appointmentsFile.is_open())
     {
-        cout << "Ошибка открытия файла с записями на процедуры.\n";
+        cout << "Ошибка открытия файла с записями на процедуры\n";
         return;
     }
     // поиск профиля пользователя по логину
@@ -558,7 +559,7 @@ void Client::viewProfile() {
         {
             // вывод информации о пользователе
             printSeparator();
-            cout << "|               CLIENT PROFILE              |\n";
+            cout << "|               ПРОФИЛЬ КЛИЕНТА             |\n";
             printSeparator();
             cout << "Логин: " << client.getLogin() << endl;
             cout << "Имя: " << client.getName() << endl;
@@ -566,7 +567,7 @@ void Client::viewProfile() {
             cout << "Номер телефона: " << client.getPhone() << endl;
             cout << "Дата рождения: " << client.getBirthday().toString() << endl;
             // проверка на наличие записи
-            // Поиск записи о процедуре в файле
+            // поиск записи о процедуре в файле
             string line;
             bool found = false;
             while (getline(appointmentsFile, line))
@@ -602,7 +603,7 @@ void Client::viewProfile() {
 
             if (!found)
             {
-                cout << "У вас нет записей на процедуры.\n";
+                cout << "У вас нет записей на процедуры\n";
             }
 
             appointmentsFile.close();
@@ -610,29 +611,30 @@ void Client::viewProfile() {
         }
     }
     // если профиль не найден
-    cout << "\nПрофиль с логином " << login << " не найден." << endl;
+    cout << "\nПрофиль с логином " << login << " не найден" << endl;
     return;
 }
 
 void Client::leaveReview() {
     if (appointments.empty()) {
-        cout << "You are not signed up for any treatments, so you cannot leave feedback\n";
+        cout << "К сожалению, вы не были записаны ни на одну процедуру, поэтому не можете оставить отзыв. " << 
+            "Записаться на любую процедуру вы можете в личном кабинете. Ждем вас!\n";
         return;
     }
 
-    cout << "\n=== Leace a feeback ===\n";
-    cout << "Select the service for which you want to leave a feedback:\n";
+    cout << "\n=== Отзыв ===\n";
+    cout << "Выберите процедуру, на которую вы хотите оставить отзыв:\n";
 
     for (size_t i = 0; i < appointments.size(); ++i) {
         cout << i + 1 << ". " << appointments[i]->getService().getName() << endl;
     }
 
     int choice;
-    cout << "Enter the service number: ";
+    cout << "Введите номер процедуры: ";
     cin >> choice;
 
     if (choice < 1 || choice > static_cast<int>(appointments.size())) {
-        cout << "Wrong choice. Please try again.\n";
+        cout << "Неверный выбор. Пожалуйста, попробуйте еще \n";
         return;
     }
 
@@ -640,12 +642,12 @@ void Client::leaveReview() {
     Service chosenService = chosenAppointment->getService();
 
     string review;
-    cout << "Enter your feedback for the service '" << chosenService.getName() << "': ";
-    cin.ignore();  // Очищаем буфер ввода
+    cout << "Пожалуйста, введите отзыв на процедуру '" << chosenService.getName() << "': ";
+    cin.ignore();  
     getline(cin, review);
 
-    // Логика для сохранения отзыва (например, добавление в базу данных или в список отзывов)
-    cout << "Thank you for your feedback :)\n";
+    //сохранение отзыва в файл
+    cout << "Спасибо за обратную связь. Вы помогаете сделать наш сервис лучше :)\n";
 
 }
 
@@ -654,16 +656,16 @@ void participateInContest(shared_ptr<Client>& currentClient) {
     cout << "|         Участие в конкурсе на скидку      |\n";
     cout << "+-------------------------------------------+\n";
 
-    // Генерация случайного числа для определения результата
+    //генерация случайного числа для определения результата
     srand(time(0));
     int chance = rand() % 100; // Случайное число от 0 до 99
 
-    if (chance < 100) { // 30% шанс на победу
-        double discount = 10 + (rand() % 21); // Скидка от 10% до 30%
+    if (chance < 30) { // 30% шанс на победу
+        double discount = 10 + (rand() % 21); // скидка от 10% до 30%
         cout << "Поздравляем! Вы выиграли скидку в " << discount << "% на следующую услугу!\n";
         currentClient->setDiscount(discount);
 
-        // Сохранение в файл информации о выигрыше
+        // сохранение в файл информации о выигрыше
         ofstream file("contest_winners.txt", ios::app);
         if (file.is_open()) {
             file << "Клиент: " << currentClient->getLogin()
@@ -671,7 +673,7 @@ void participateInContest(shared_ptr<Client>& currentClient) {
             file.close();
         }
         else {
-            cout << "Ошибка записи в файл с победителями конкурса.\n";
+            cout << "Ошибка записи в файл с победителями конкурса\n";
         }
     }
     else {
@@ -761,31 +763,31 @@ int clientRegistration(const string& login, const string& password) {
     string name, surname, phone;
     Data birthday;
 
-    cout << "Please enter your name: ";
+    cout << "Введите ваше имя: ";
     cin >> ws;
     getline(cin, name);
-    cout << "Please etner your surname: ";
+    cout << "Введите вашу фамилию: ";
     getline(cin, surname);
-    cout << "Please etner your phone: +";
+    cout << "Введите ваш номер телефона: +";
     while (true) {
         cin >> phone;
         if (isValidPhoneNumber(phone)) {
             break;
         }
         else {
-            cout << "Error! The phone number must contain exactly 12 digits. Repeat the entry: +";
+            cout << "Ошибка! Номер телефона должен состоять из 12 цифр. Повторите ввод еще раз: +";
         }
     }
-    cout << "Enter your birth date (dd mm yyyy): ";
+    cout << "Введите вашу дату рождения (dd mm yyyy): ";
     while (true) {
         cin >> birthday;
         if (cin.fail() || !birthday.isValidDate()) {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "Invalid date. Please enter a valid date (dd mm yyyy): ";
+            cout << "Неверная дата. Пожалуйста повторите ввод (dd mm yyyy): ";
         }
         else if (!isAdult(birthday, 14)) {
-            cout << "Registration is only available for users aged 14 or older. Sorry...\n";
+            cout << "К сожалению, регистрация доступна лицам старше 14 лет. Вы можете прийти к нам в сопровождении взрослого :)\n";
             return mainMenu();
         }
         else {
@@ -797,7 +799,7 @@ int clientRegistration(const string& login, const string& password) {
     Global::clients.push_back(newClient); 
     saveUserCredentials(login, password);
     saveClientsToFile(Global::clients);
-    cout << "Registration successful! Welcome, " << name << " " << surname << ".\n";
+    cout << "Спасибо за регистрацию! Добро пожаловать, " << name << " " << surname << "!\n";
     _getch();
     system("cls");
     return Global::authSystem.clientMenu(currentClient);
@@ -805,19 +807,19 @@ int clientRegistration(const string& login, const string& password) {
 
 int authenticateClient() {
         cout << "+-----------------------------------------------+\n";
-        cout << "|                     Log in                    |\n";
+        cout << "|                       Вход                    |\n";
         cout << "+-----------------------------------------------+\n";
         string login;
-        cout << "Enter your login: ";
+        cout << "Введите логин: ";
         cin >> login;
-        cout << "Enter your password: ";
+        cout << "Введите пароль: ";
         string password = getHiddenInput();
         while (true)
         {
             shared_ptr<Client> currentClient = checkUserCredentials(login, password);
             if (currentClient)
             {
-                cout << "\nYou are logged in as a regular user!" << endl;
+                cout << "\nВы вошли как обычный пользователь!" << endl;
                 _getch();
                 system("cls");
                 Global::authSystem.clientMenu(currentClient);
@@ -825,7 +827,7 @@ int authenticateClient() {
             }
             else
             {
-                cout << "\nInvalid login or password. Try again." << endl;
+                cout << "\nНеверный логин или пароль. Повторите снова" << endl;
                 return mainMenu();
             }
         }

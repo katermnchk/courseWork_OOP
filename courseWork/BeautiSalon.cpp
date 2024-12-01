@@ -29,17 +29,17 @@ int main() {
 int mainMenu() {
     int choice_role;
     cout << "+--------------------------------------------------------------------------------------------+\n";
-    cout << "|                    Service accounting system in a cosmetic salon                           |\n";
+    cout << "|                   ДОБРО ПОЖАЛОВАТЬ В КОСМЕТИЧЕСКИЙ САЛОН REMSALON                          |\n";
     cout << "+--------------------------------------------------------------------------------------------+\n";
-    cout << "|1 - Is this your first time in our program? Sign up                                         |\n";
-    cout << "|2 - Do you already have an account ? Log in                                                 |\n";
-    cout << "|0 - Exit                                                                                    |\n";
+    cout << "|1 - Еще нет личного кабинета? Зарегистрироваться                                            |\n";
+    cout << "|2 - Уже есть личный кабинет? Войти                                                          |\n";
+    cout << "|0 - Выход                                                                                   |\n";
     cout << "+--------------------------------------------------------------------------------------------+\n";
-    cout << "Your choice: ";
+    cout << "Ваш выбор: ";
     cin >> choice_role;
     while (cin.fail() || choice_role < 0 || choice_role > 2)
     {
-        cout << "Error! Enter the correct value: ";
+        cout << "Ошибка! Введите корректное значение: ";
         cin.clear();
         cin.ignore(INT_MAX, '\n');
         cin >> choice_role;
@@ -58,16 +58,16 @@ int mainMenu() {
 int registration() {
     string login;
     cout << "+-----------------------------------------------+\n";
-    cout << "|                  REGISTRATION                 |\n";
+    cout << "|                 РЕГИСТРАЦИЯ                   |\n";
     cout << "+-----------------------------------------------+\n";
     bool flag_log = false;
     do
     {
-        cout << "Enter your login: ";
+        cout << "Введите ваш логин: ";
         cin >> login;
         if (checkLoginExists(login))
         {
-            cout << "\nThis login already exists. Try another one" << endl;
+            cout << "\nДанный логин уже существует. Попробуйте другой" << endl;
         }
         else flag_log = true;
     } while (!flag_log);
@@ -75,10 +75,10 @@ int registration() {
     string password = getPassword();
     int choice;
     cout << "\n+-----------------------------------------------+\n";
-    cout << "|1 - sign up as a regular user                  |\n";
-    cout << "|2 - sign up as an administator                 |\n";
+    cout << "|1 - зарегистрироваться как клиент              |\n";
+    cout << "|2 - зарегистрироваться как администратор       |\n";
     cout << "+-----------------------------------------------+\n";
-    cout << "Your choice: ";
+    cout << "Ваш выбор: ";
     cin >> choice;
     choice = checkMenuChoice(choice, 1, 2);
     switch (choice) {

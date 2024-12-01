@@ -17,7 +17,7 @@ void SuperAdmin::readAdminRequests(vector<string>& allRequests) {
     }
     else
     {
-        cout << "Ошибка открытия файла для чтения заявок." << endl;
+        cout << "ошибка открытия файла для чтения заявок" << endl;
     }
 }
 
@@ -80,7 +80,7 @@ void SuperAdmin::rejectAdminRequest(const string& login, const string& password,
     Global::clients.push_back(newClient);
     saveUserCredentials(login, password);
     saveClientsToFile(Global::clients);
-    cout << "Заявка отклонена. Добавлен новый пользователь." << endl;
+    cout << "Заявка отклонена. Добавлен новый пользователь" << endl;
     removeAdminRequest(login, password);//удаление рассмотренной заявки
 }
 
@@ -181,11 +181,11 @@ int Authentication::superAdminMenu(shared_ptr<SuperAdmin>& currentSuperAdmin) {
             break;
         }
         case 0:
-            cout << "Exiting client menu.\n";
+            cout << "Выход в главное меню\n";
             system("cls");
             return mainMenu();
         default:
-            cout << "Неверный выбор." << endl;
+            cout << "Неверный выбор" << endl;
         }
     } while (choice != 0);
 
@@ -197,10 +197,10 @@ void Authentication::registerSuperAdmin(const string& login, const string& hashe
     if (file.is_open()) {
         file << login << " " << hashedPassword << endl;
         file.close();
-        cout << "SuperAdmin credentials have been saved.\n";
+        cout << "Данные суперадмина успешно сохранены\n";
     }
     else {
-        cout << "Error opening file for writing SuperAdmin credentials.\n";
+        cout << "Ошибка открытия файла\n";
     }
 }
 
@@ -226,7 +226,7 @@ int authenticateSuperAdmin() {
         }
         else
         {
-            cout << "\nInvalid login or password. Try again." << endl;
+            cout << "\nНеверный логин или пароль. ПОжалуйста, попробуйте еще раз" << endl;
             return mainMenu();
         }
     }

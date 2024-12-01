@@ -8,7 +8,7 @@ istream& operator>>(istream& in, Data& data)
 	in >> data.day >> data.month >> data.year;
 
 	while (!data.isValidDate()) {
-		cout << "Invalid date. Please re-enter date (dd mm yyyy): ";
+		cout << "Неверная дата. Пожалуйста, потворите ввод (dd mm yyyy): ";
 		in >> data.day >> data.month >> data.year;
 		in.clear();
 		in.ignore(numeric_limits<streamsize>::max(), '\n');
