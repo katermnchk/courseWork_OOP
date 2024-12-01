@@ -88,7 +88,8 @@ int registration() {
     return 0;
 }
 
-int enter() {
+int enter() 
+{
     Global::authSystem.loginMenu();    
     return 0;
 }

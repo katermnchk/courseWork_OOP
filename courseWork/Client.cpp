@@ -6,6 +6,9 @@
 #include <vector>
 #include <conio.h>
 #include <fstream>
+#define GRAY_TEXT "\033[90m"
+#define RESET_TEXT "\033[0m"
+
 
 using namespace Role;
 
@@ -55,6 +58,10 @@ int Authentication::clientMenu(shared_ptr<Client>& currentClient) {
         case 7:
             currentClient->viewProfile();
             break;
+       /* case 8:
+            participateInContest(currentClient);
+            cout << "Желаете ли вы принять участие в конкурсе и получить сикдку на процедуру?";
+            break;*/
         case 0:
             cout << "Exiting client menu.\n";
             system("cls");
@@ -136,21 +143,59 @@ void Client::showServices() {
     showServices(Global::services); //перегруженный метод для всех услуг
 }
 void Client::showServices(const vector<Service>& services) {
-    cout << "+------------------------------------------------------------------------------------------------------------------------------+" << endl;
-    cout << "|                                                         Catalog of services                                                 |" << endl;
-    cout << "+-----+-------------------------+-------------------------------------+----------+---------------+-----------------------------+" << endl;
-    cout << "| No  | " << setw(24) << left << "Service Name" << "|" << setw(37) << left << "Description" << "|"
-        << setw(10) << left << "Price" << "|" << setw(15) << left << "Duration" << "|"
-        << setw(29) << left << "Master" << "|" << endl;
-    cout << "+-----+-------------------------+-------------------------------------+----------+---------------+-----------------------------+" << endl;
+    const int col1Width = 5;   // Ширина для номера
+    const int col2Width = 25; // Ширина для названия
+    const int col3Width = 35; // Ширина для информации
+    const int col4Width = 25; // Ширина для стоимости
+    const int col5Width = 11; // Ширина для длительности
+    const int col6Width = 28; // Ширина для мастера
+
+    // Заголовок таблицы
+    cout << "+-----+-------------------------+-----------------------------------+-------------------------+---------------+-----------------------------+" << endl;
+    cout << "| №   | Название                | Информация                        | Стоимость               | Длительность  | Мастер                      |" << endl;
+    cout << "+-----+-------------------------+-----------------------------------+-------------------------+---------------+-----------------------------+" << endl;
 
     for (size_t i = 0; i < services.size(); ++i) {
-        cout << "| " << setw(3) << left << i + 1 << " |" << setw(25) << left << services[i].getName() << "|"
-            << setw(37) << left << services[i].getInfo() << "|"
-            << setw(6) << left << services[i].getPrice() << " BYN |"
-            << setw(11) << left << services[i].getDuration() << " min |"
-            << setw(15) << left << services[i].getMaster().getName() << " " << setw(13) << left << services[i].getMaster().getSurname() << "|" << endl;
-        cout << "+-----+-------------------------+-------------------------------------+----------+---------------+-----------------------------+" << endl;
+        const auto& service = services[i];
+        int discount = getDiscountFromFile(service.getName());
+        int originalPrice = (discount > 0) ? service.getPrice() * 100 / (100 - discount) : service.getPrice();
+
+        // Формируем строки стоимости с двумя знаками после запятой
+        string priceCurrent = to_string(service.getPrice());
+        priceCurrent = priceCurrent.substr(0, priceCurrent.find('.') + 3);
+        priceCurrent += " BYN";
+
+        string priceOriginal = "";
+        if (discount > 0) {
+            string originalPriceStr = to_string(originalPrice);
+            // originalPriceStr = originalPriceStr.substr(0, originalPriceStr.find('.') + 3); 
+            setColor("31"); // Красный цвет для скидки
+            priceOriginal = "(Было: " + originalPriceStr + " BYN, -" + to_string(discount) + "%)";  resetColor();
+        }
+
+        // Разбиваем строки, если они слишком длинные
+        string serviceInfo = service.getInfo();
+        if (serviceInfo.length() > col3Width - 1) {
+            serviceInfo = serviceInfo.substr(0, col3Width - 4) + "...";
+        }
+
+        // Вывод услуги в первую строку
+        cout << "| " << setw(col1Width - 1) << left << i + 1
+            << "| " << setw(col2Width - 1) << left << service.getName()
+            << "| " << setw(col3Width - 1) << left << serviceInfo
+            << "| " << setw(col4Width - 1) << left << priceCurrent
+            << "| " << setw(col5Width - 1) << left << service.getDuration() << " мин"
+            << "| " << setw(col6Width - 1) << left << service.getMaster().getName() + " " + service.getMaster().getSurname()
+            << " |" << endl;
+
+        // Вывод второй строки для скидки, если она есть
+        if (!priceOriginal.empty()) {
+
+            cout << "|     |                         |                                   | " << setw(col4Width - 1) << left << priceOriginal
+                << "|               |" << endl;
+        }
+
+        cout << "+-----+-------------------------+-----------------------------------+-------------------------+---------------+-----------------------------+" << endl;
     }
 }
 
@@ -198,13 +243,13 @@ void madeAppointment(shared_ptr<Client>& currentClient) {
             }
             break;
         }
-
         // Поиск доступных временных слотов
         vector<Time> availableTimes = findAvailableTimes(chosenDate, selectedService, Global::appointmentSlots);
         if (availableTimes.empty()) {
             cout << "На выбранную дату нет доступных временных слотов.\n";
             continue;
         }
+
 
         // Вывод доступных временных слотов
         cout << "Доступные временные слоты:\n";
@@ -254,10 +299,25 @@ void madeAppointment(shared_ptr<Client>& currentClient) {
             << (chosenTime.getMinute() < 10 ? "0" : "") << chosenTime.getMinute() << endl;
         cout << "---------------------------------------------\n";
         saveUserAppointment(currentClient, selectedService, chosenDate, chosenTime);
+        cout << "\n\nЖелаете ли вы принять участие в конкурсе и получить сикдку на процедуру? (1 - да, 2 - нет)\nВаш выбор: ";
+        int choice = 0;
+        cin >> choice;
+        choice = checkMenuChoice(choice, 1, 2);
+        if (choice == 1) {
+            participateInContest(currentClient);
+            if (currentClient->getDiscount() > 0) {
+                double finalPrice = selectedService.getPrice() * (1 - (currentClient->getDiscount() / 100));
+                cout << "Стоимость услуги с учетом вашей скидки ("
+                    << currentClient->getDiscount() << "%): "
+                    << finalPrice << " BYN\n";
+            }
+        }
+        else {
+            cout << "Спасибо, что выбрали нас !\n";
+        }
         return;
     }
 }
-
 void Client::setAppointment(Service service, const Data& appointmentDate) {
     if (service.getName().empty()) {
         cout << "Ошибка: Услуга не выбрана." << endl;
@@ -589,6 +649,39 @@ void Client::leaveReview() {
 
 }
 
+void participateInContest(shared_ptr<Client>& currentClient) {
+    cout << "\n+-------------------------------------------+\n";
+    cout << "|         Участие в конкурсе на скидку      |\n";
+    cout << "+-------------------------------------------+\n";
+
+    // Генерация случайного числа для определения результата
+    srand(time(0));
+    int chance = rand() % 100; // Случайное число от 0 до 99
+
+    if (chance < 100) { // 30% шанс на победу
+        double discount = 10 + (rand() % 21); // Скидка от 10% до 30%
+        cout << "Поздравляем! Вы выиграли скидку в " << discount << "% на следующую услугу!\n";
+        currentClient->setDiscount(discount);
+
+        // Сохранение в файл информации о выигрыше
+        ofstream file("contest_winners.txt", ios::app);
+        if (file.is_open()) {
+            file << "Клиент: " << currentClient->getLogin()
+                << " - Скидка: " << discount << "%\n";
+            file.close();
+        }
+        else {
+            cout << "Ошибка записи в файл с победителями конкурса.\n";
+        }
+    }
+    else {
+        cout << "К сожалению, в этот раз вы не выиграли. Попробуйте снова!\n";
+    }
+
+    cout << "+-------------------------------------------+\n";
+}
+
+
 vector<Time> findAvailableTimes(const Data& chosenDate, const Service& selectedService, const vector<Shedule>& appointmentSlots) {
     vector<Time> availableTimes;
 
@@ -608,6 +701,49 @@ vector<Time> findAvailableTimes(const Data& chosenDate, const Service& selectedS
     }
     return availableTimes;
 }
+/*vector<Time> findAvailableTimes(const Data& chosenDate, const Service& selectedService, const vector<Shedule>& appointmentSlots) {
+    vector<Time> availableTimes;
+
+    for (int hour = 9; hour < 21; hour += 3) {
+        availableTimes.push_back({ hour, 0 });
+    }
+
+    for (const auto& appointment : appointmentSlots) {
+        if (appointment.appointmentDate == chosenDate &&
+            appointment.isBooked && appointment.selectedService.getName() == selectedService.getName()) {
+            Time bookedTime = appointment.appointmentTime;
+            auto it = find(availableTimes.begin(), availableTimes.end(), bookedTime);
+            if (it != availableTimes.end()) {
+                availableTimes.erase(it);
+            }
+        }
+    }
+
+    // Вывод всех временных слотов с выделением занятых серым
+    cout << "Доступные временные слоты:\n";
+    for (int hour = 9; hour < 21; hour += 3) {
+        Time currentTime = { hour, 0 };
+
+        auto it = find_if(appointmentSlots.begin(), appointmentSlots.end(), [&](const Shedule& appointment) {
+            return appointment.appointmentDate == chosenDate &&
+                appointment.selectedService.getName() == selectedService.getName() &&
+                appointment.appointmentTime == currentTime &&
+                appointment.isBooked;
+            });
+
+        if (it != appointmentSlots.end()) {
+            // Занятый временной слот
+            cout << GRAY_TEXT << hour << ":00 (занято)" << RESET_TEXT << endl;
+        }
+        else {
+            // Свободный временной слот
+            cout << hour << ":00 (свободно)" << endl;
+        }
+    }
+
+    return availableTimes;
+}*/ 
+
 
 Client findClientByLogin(const string& login, const vector<Client>& clients) //поиск инфо о клиенте по его логину
 {

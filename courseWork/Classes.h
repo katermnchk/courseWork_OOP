@@ -183,6 +183,9 @@ namespace Role {
 			os << account.getLogin() << " " << account.getPassword();
 			return os;
 		}
+
+		void displayServices();
+
 		virtual void showRole() const = 0;
 	};
 
@@ -194,6 +197,7 @@ namespace Role {
 		string phone;
 		vector<shared_ptr<Service>> services;
 		vector<shared_ptr<Appointment>> appointments; 
+		double discount;
 	public:
 		Client() {}
 		Client(const string& login, const string& password, const string& name, const string& surname, const string& phone, const Data& birthday)
@@ -240,8 +244,16 @@ namespace Role {
 			return appointments;
 		}
 
-		void showServices(const vector<Service>& services);
+		void setDiscount(double newDiscount) {
+			discount = newDiscount;
+		}
+
+		double getDiscount() const {
+			return discount;
+		}
+
 		void showServices();
+		void showServices(const vector<Service>& services);
 		void setAppointment(Service service, const Data& appointmentDate);
 		//void makeAppointment(const string& login, vector<Service>& services, vector<Appointment>& appointments, vector<Client>& clients);
 		void editProfile();

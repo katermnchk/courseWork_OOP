@@ -133,7 +133,7 @@ void Admin::displayServices() {
         string priceOriginal = "";
         if (discount > 0) {
             string originalPriceStr = to_string(originalPrice);
-            originalPriceStr = originalPriceStr.substr(0, originalPriceStr.find('.') + 3); 
+           // originalPriceStr = originalPriceStr.substr(0, originalPriceStr.find('.') + 3); 
             setColor("31"); // Красный цвет для скидки
             priceOriginal = "(Было: " + originalPriceStr + " BYN, -" + to_string(discount) + "%)";  resetColor();
         }
@@ -309,26 +309,42 @@ void Admin::deleteService(vector<Service> services) {
     }
 }
 
-void Admin::viewUserRecords() const
-{
+void Admin::viewUserRecords() const {
     ifstream file("user_appointments.txt");
+    ifstream winnersFile("contest_winners.txt");
     string line;
-    if (file.is_open())
-    {
-        cout << "+-----------------------------------------------+\n";
-        cout << "|              Записи пользователей             |\n";
-        cout << "+-----------------------------------------------+\n";
-        while (getline(file, line))
-        {
+
+    cout << "+-----------------------------------------------+\n";
+    cout << "|              Записи пользователей             |\n";
+    cout << "+-----------------------------------------------+\n";
+
+    // Чтение записей
+    if (file.is_open()) {
+        while (getline(file, line)) {
             cout << line << endl;
         }
         file.close();
     }
-    else
-    {
+    else {
         cout << "Ошибка открытия файла с записями пользователей." << endl;
     }
+
+    // Чтение победителей конкурса
+    cout << "\n+-----------------------------------------------+\n";
+    cout << "|           Победители конкурса                |\n";
+    cout << "+-----------------------------------------------+\n";
+
+    if (winnersFile.is_open()) {
+        while (getline(winnersFile, line)) {
+            cout << line << endl;
+        }
+        winnersFile.close();
+    }
+    else {
+        cout << "Ошибка открытия файла с победителями конкурса." << endl;
+    }
 }
+
 
 void Admin::displayTopPopularServices(const vector<Client> clients) const
 {

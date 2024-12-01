@@ -30,6 +30,7 @@ void updateClientFile(const shared_ptr<Client>& client, const Service& selectedS
 //void saveClientsToFile(const vector<Client>& clients);
 void saveAdminCredentials(const string& login, const string& password);
 int displayServicesWithSort(shared_ptr<Client>& currentClient);
+void participateInContest(shared_ptr<Client>& currentClient);
 void sortByPrice();
 void sortByTime();
 void sortByName();
