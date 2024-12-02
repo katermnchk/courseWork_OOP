@@ -8,6 +8,7 @@
 #include <fstream>
 #include <chrono>//для даты
 #include <ctime>
+#include <random>
 #define GRAY_TEXT "\033[90m"
 #define RESET_TEXT "\033[0m"
 
@@ -647,6 +648,7 @@ void Client::leaveReview() {
     getline(cin, review);
 
     //сохранение отзыва в файл
+    saveUserReview(*this, review, chosenService);
     cout << "Спасибо за обратную связь. Вы помогаете сделать наш сервис лучше :)\n";
 
 }
@@ -759,6 +761,72 @@ Client findClientByLogin(const string& login, const vector<Client>& clients) //п
     return Client();
 }
 
+string generateSalt(size_t length = 16) {
+    const string charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    random_device rd;
+    mt19937 generator(rd());
+    uniform_int_distribution<> distribution(0, charset.size() - 1);
+
+    string salt;
+    for (size_t i = 0; i < length; ++i) {
+        salt += charset[distribution(generator)];
+    }
+    return salt;
+}
+
+string hashPassword(const string& password, const string& salt) {
+    hash<string> hasher;
+    return to_string(hasher(password + salt));
+}
+
+/*int clientRegistration(const string& login, const string& password) {
+    string name, surname, phone;
+    Data birthday;
+
+    cout << "Введите ваше имя: ";
+    cin >> ws;
+    getline(cin, name);
+    cout << "Введите вашу фамилию: ";
+    getline(cin, surname);
+    cout << "Введите ваш номер телефона: +";
+    while (true) {
+        cin >> phone;
+        if (isValidPhoneNumber(phone)) {
+            break;
+        }
+        else {
+            cout << "Ошибка! Номер телефона должен состоять из 12 цифр. Повторите ввод еще раз: +";
+        }
+    }
+    cout << "Введите вашу дату рождения (dd mm yyyy): ";
+    while (true) {
+        cin >> birthday;
+        if (cin.fail() || !birthday.isValidDate()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Неверная дата. Пожалуйста повторите ввод (dd mm yyyy): ";
+        }
+        else if (!isAdult(birthday, 14)) {
+            cout << "К сожалению, регистрация доступна лицам старше 14 лет. Вы можете прийти к нам в сопровождении взрослого :)\n";
+            cout << "Пожалуйста, нажмите на любую кнопку для выхода...";
+            _getch();
+            system("cls");
+            return mainMenu();
+        }
+        else {
+            break;
+        }
+    }
+    Client newClient(login, password, name, surname, phone, birthday);
+    shared_ptr<Client> currentClient = make_shared<Client>(newClient);
+    Global::clients.push_back(newClient); 
+    saveUserCredentials(login, password);
+    saveClientsToFile(Global::clients);
+    cout << "Спасибо за регистрацию! Добро пожаловать, " << name << " " << surname << "!\n";
+    _getch();
+    system("cls");
+    return Global::authSystem.clientMenu(currentClient);
+}*/
 int clientRegistration(const string& login, const string& password) {
     string name, surname, phone;
     Data birthday;
@@ -788,22 +856,30 @@ int clientRegistration(const string& login, const string& password) {
         }
         else if (!isAdult(birthday, 14)) {
             cout << "К сожалению, регистрация доступна лицам старше 14 лет. Вы можете прийти к нам в сопровождении взрослого :)\n";
+            cout << "Пожалуйста, нажмите на любую кнопку для выхода...";
+            _getch();
+            system("cls");
             return mainMenu();
         }
         else {
             break;
         }
     }
-    Client newClient(login, password, name, surname, phone, birthday);
+
+    string salt = generateSalt();
+    string hashedPassword = hashPassword(password, salt);
+
+    saveUserCredentials(login, hashedPassword, salt);
+    Client newClient(login, hashedPassword, salt, name, surname, phone, birthday);
     shared_ptr<Client> currentClient = make_shared<Client>(newClient);
-    Global::clients.push_back(newClient); 
-    saveUserCredentials(login, password);
+    Global::clients.push_back(newClient);
     saveClientsToFile(Global::clients);
     cout << "Спасибо за регистрацию! Добро пожаловать, " << name << " " << surname << "!\n";
     _getch();
     system("cls");
     return Global::authSystem.clientMenu(currentClient);
 }
+
 
 int authenticateClient() {
         cout << "+-----------------------------------------------+\n";

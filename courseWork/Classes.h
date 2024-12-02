@@ -158,10 +158,11 @@ namespace Role {
 	protected:
 		string login;
 		string password;
+		string salt;
 	public:
-		Account() : login(""), password("") {}
-		Account(const string& login, const string& password) :
-			login(login), password(password) {}
+		Account() : login(""), password(""), salt("") {}
+		Account(const string& login, const string& password, const string& salt)
+			: login(login), password(password), salt(salt) {}
 
 		virtual ~Account() = default;
 
@@ -179,12 +180,17 @@ namespace Role {
 			return password;
 		}
 
+		void setSalt(const string& newSalt) {
+			salt = newSalt;
+		}
+		string getSalt() const {
+			return salt;
+		}
+
 		friend ostream& operator<<(ostream& os, const Account& account) {
 			os << account.getLogin() << " " << account.getPassword();
 			return os;
 		}
-
-		void displayServices();
 
 		virtual void showRole() const = 0;
 	};
@@ -200,10 +206,14 @@ namespace Role {
 		double discount;
 	public:
 		Client() {}
-		Client(const string& login, const string& password, const string& name, const string& surname, const string& phone, const Data& birthday)
-			: Account(login, password), name(name), surname(surname), phone(phone), birthday(birthday) {}
-		
-		Client(const string& login, const string& password) : Account(login, password) {};
+		Client(const string& login, const string& password)
+			: Account(login, password, "") {}
+		Client(const string& login, const string& password, const string& salt,
+			const string& name, const string& surname, const string& phone, const Data& birthday)
+			: Account(login, password, salt), name(name), surname(surname), phone(phone), birthday(birthday) {}
+
+		Client(const string& login, const string& password, const string& salt)
+			: Account(login, password, salt) {}
 
 		void showRole() const override {
 			cout << "I'm a client" << endl;
@@ -255,7 +265,6 @@ namespace Role {
 		void showServices();
 		void showServices(const vector<Service>& services);
 		void setAppointment(Service service, const Data& appointmentDate);
-		//void makeAppointment(const string& login, vector<Service>& services, vector<Appointment>& appointments, vector<Client>& clients);
 		void editProfile();
 		void viewProfile();
 		void leaveReview();
@@ -273,12 +282,14 @@ namespace Role {
 		string phone;
 	public:
 		Admin() = default;
-		Admin(const string& login, const string& password, int adminID) :
-			Account(login, password), adminID(adminID) {};
-		Admin(const string& login, const string& password) :
-			Account(login, password) {};
+		Admin(const string& login, const string& password, const string& salt, int adminID) :
+			Account(login, password, salt), adminID(adminID) {};
+		Admin(const string& login, const string& password)
+			: Account(login, password, "") {};
+		Admin(const string& login, const string& password, const string& salt) :
+			Account(login, password, salt) {};
 		Admin(const string& login, const string& name, const string& surname, const string& phone, const Data& birthday)
-			: Account(login, password), name(name), surname(surname), birthday(birthday) {}
+			: Account(login, password, salt), name(name), surname(surname), birthday(birthday) {}
 
 		void showRole() const override {
 			cout << "I'm an administator" << endl;
@@ -297,18 +308,14 @@ namespace Role {
 		bool getIsSuperAdmin() {
 			return isSuperAdmin;
 		}
-		//void addService(vector<shared_ptr<Service>>& services);
-		//void displayServices(vector<shared_ptr<Service>>& services);
+
 		void displayServices();
-		//static void editService(vector<shared_ptr<Service>>& services);
 		void editService(vector<Service>& services);
-		//void deleteService(vector<shared_ptr<Service>>& services);
 		void addService(vector<Service> services);
 		void deleteService(vector<Service> services);
 		void viewUserRecords() const;
-		//void viewUserRecords(const vector<shared_ptr<Client>>& clients) const;
 		void displayTopPopularServices(const vector<Client> clients) const;
-		void viewReviews(const vector<string>& reviews) const;
+		void viewReviews() const;
 		void setDiscounts(vector<Service>& services);
 	};
 
@@ -317,18 +324,18 @@ namespace Role {
 		vector<shared_ptr<Admin>> admins;
 	public:
 		SuperAdmin(const string& login, const string& password, int adminID)
-			: Admin(login, password, adminID) {}
+			: Admin(login, password, salt, adminID) {}
 		SuperAdmin(const string& login, const string& password):
-			Admin(login, password) {};
+			Admin(login, password, salt) {};
 
 		
 		void displayAdminRequests();
 		void readAdminRequests(vector<string>& allRequests);
 		void removeAdminRequest(const string& login, const string& password);
-		void approveAdminRequest(const string& login, const string& password, const string& name, const string& surname, 
-			const string& phone, const Data& birthday);
-		void rejectAdminRequest(const string& login, const string& password, const string& name, const string& surname, 
-			const string& phone, const Data& birthday);
+		void approveAdminRequest(const string& login, const string& hashedPassword, const string& salt, const string& name, 
+			const string& surname, const string& phone, const Data& birthday);
+		void rejectAdminRequest(const string& login, const string& password, const string& salt, const string& name,
+			const string& surname, const string& phone, const Data& birthday);
 	};
 
 	class Authentication {
@@ -336,7 +343,6 @@ namespace Role {
 		vector<shared_ptr<Admin>> admins_to_approve;
 	public:
 		bool authenticate(const string& login, const string& password, shared_ptr<Account>& currentAccount);
-		//bool login(const string& role, shared_ptr<Account>& currentAccount);
 
 		void registerAccount(shared_ptr<Account> account, const string& login, const string& password);
 		void registerSuperAdmin(const string& login, const string& password, int adminID);
@@ -344,12 +350,9 @@ namespace Role {
 		void approveAdminRegistration(const string& login, bool approve);
 
 		int loginMenu();
-		///int clientMenu(Client newClient);
 		int superAdminMenu(shared_ptr<SuperAdmin>& currentSuperAdmin);
-		//int adminMenu(shared_ptr<Admin>& currentAdmin, vector<shared_ptr<Service>>& services, const vector<shared_ptr<Client>>& clients);
 		int adminMenu(shared_ptr<Admin>& currentAdmin);
 		int clientMenu(shared_ptr<Client>& currentClient);
-		//int adminMenu(Admin currentAdmin);
 	};
 
 }

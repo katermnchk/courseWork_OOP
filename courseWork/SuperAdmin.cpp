@@ -61,24 +61,28 @@ void SuperAdmin::removeAdminRequest(const string& login, const string& password)
     }
 }
 
-void SuperAdmin::approveAdminRequest(const string& login, const string& password, const string& name,
+void SuperAdmin::approveAdminRequest(const string& login, const string& hashedPasswrd, const string& sal, const string& name,
     const string& surname, const string& phone, const Data& birthday)
 {
+    string salt = generateSalt(16);
+    string hashedPassword = hashPassword(password, salt);
     vector<string> requests;
     readAdminRequests(requests);
     // добавляем нового администратора в файл с учетными данными администраторов
-    saveAdminCredentials(login, password);
+    saveAdminCredentials(login, hashedPassword, salt);
     // удаляем заявку из списка заявок
     removeAdminRequest(login, password);
 }
 
-void SuperAdmin::rejectAdminRequest(const string& login, const string& password, const string& name, 
+void SuperAdmin::rejectAdminRequest(const string& login, const string& passwrd, const string& slt, const string& name,
     const string& surname, const string& phone, const Data& birthday) {
+    string salt = generateSalt(16);
+    string hashedPassword = hashPassword(password, salt);
     vector<string> requests;
     readAdminRequests(requests);
-    Client newClient(login, password, name, surname, phone, birthday);//если заявка отклонена, добавляем ноовго пользователя
+    Client newClient(login, hashedPassword, salt, name, surname, phone, birthday);//если заявка отклонена, добавляем ноовго пользователя
     Global::clients.push_back(newClient);
-    saveUserCredentials(login, password);
+    saveUserCredentials(login, hashedPassword, salt);
     saveClientsToFile(Global::clients);
     cout << "Заявка отклонена. Добавлен новый пользователь" << endl;
     removeAdminRequest(login, password);//удаление рассмотренной заявки
@@ -159,11 +163,12 @@ int Authentication::superAdminMenu(shared_ptr<SuperAdmin>& currentSuperAdmin) {
             cout << "Введите логин администратора для одобрения: ";
             cin >> login;
             string password = getAdminPassword(login); // Получение пароля из файла
+            string salt = "";
             string name = getAdminName(login);
             string surname = getSurname(login);
             string phone = getPhone(login);
             Data birthday = getBirthday(login);
-            currentSuperAdmin -> approveAdminRequest(login, password, name, surname, phone, birthday); // Логика одобрения
+            currentSuperAdmin -> approveAdminRequest(login, password, salt, name, surname, phone, birthday); // Логика одобрения
             break;
         }
         case 3:
@@ -173,11 +178,12 @@ int Authentication::superAdminMenu(shared_ptr<SuperAdmin>& currentSuperAdmin) {
             cout << "Введите логин администратора для отклонения: ";
             cin >> login;
             string password = getAdminPassword(login);
+            string salt = "";
             string name = getAdminName(login);
             string surname = getSurname(login);
             string phone = getPhone(login);
             Data birthday = getBirthday(login);
-            currentSuperAdmin -> rejectAdminRequest(login, password, name, surname, phone, birthday);
+            currentSuperAdmin -> rejectAdminRequest(login, password, salt, name, surname, phone, birthday);
             break;
         }
         case 0:
@@ -192,12 +198,14 @@ int Authentication::superAdminMenu(shared_ptr<SuperAdmin>& currentSuperAdmin) {
     return 0;
 }
 
-void Authentication::registerSuperAdmin(const string& login, const string& hashedPassword, int adminID) {
+void Authentication::registerSuperAdmin(const string& login, const string& password, int adminID) {
     ofstream file("senior_admin_credentials.txt", ios::app);
+    string salt = generateSalt(16);
+    string hashedPassword = hashPassword(password, salt);
     if (file.is_open()) {
-        file << login << " " << hashedPassword << endl;
+        file << login << " " << hashedPassword << " " << salt << endl;
         file.close();
-        cout << "Данные суперадмина успешно сохранены\n";
+        cout << "\nДанные суперадмина успешно сохранены\n";
     }
     else {
         cout << "Ошибка открытия файла\n";

@@ -21,12 +21,13 @@ int Authentication::adminMenu(shared_ptr<Admin>& currentAdmin) {
         cout << "|5 - Просмотреть записи пользователей        |\n";
         cout << "|6 - Вывести топ популярных процедур         |\n";
         cout << "|7 - Установить скидки                       |\n";
+        cout << "|8 - Посмотреть отзывы клиентов              |\n";
         cout << "|0 - Выйти в главное меню                    |\n";
         cout << "+--------------------------------------------+\n";
         cout << "Ваш выбор: ";
         cin >> choice;
 
-        choice = checkMenuChoice(choice, 0, 7);
+        choice = checkMenuChoice(choice, 0, 8);
 
         switch (choice) {
         case 1:
@@ -49,6 +50,9 @@ int Authentication::adminMenu(shared_ptr<Admin>& currentAdmin) {
             break;
         case 7:
             currentAdmin->setDiscounts(Global::services);
+            break;
+        case 8:
+            currentAdmin->viewReviews();
             break;
         case 0:
             cout << "Выход в главное меню\n";
@@ -403,7 +407,7 @@ void Admin::displayTopPopularServices(const vector<Client> clients) const
     }
 }
 
-void Admin::viewReviews(const vector<string>& reviews) const//показать отзывы пользователей
+void Admin::viewReviews() const//показать отзывы пользователей
 {
     ifstream file("user_reviews.txt");
     string line;
@@ -495,7 +499,7 @@ int adminRegistration(const string& login, const string& password) {
             break;
         }
         else {
-            cout << "Ошибка! TНомер телефона должен состоять ровно из 12 цифр. Повторите ввод: +";
+            cout << "Ошибка! Номер телефона должен состоять ровно из 12 цифр. Повторите ввод: +";
         }
     }
     cout << "Введите вашу дату рождения (dd mm yyyy): ";
@@ -515,9 +519,13 @@ int adminRegistration(const string& login, const string& password) {
             break;
         }
     }
+
+    string salt = generateSalt(16);
+    string hashedPassword = hashPassword(password, salt);
+
     Admin newAdmin(login, name, surname, phone, birthday);
     Global::admins.push_back(newAdmin);
-    addAdminRequest(login, password, name, surname, phone, birthday);
+    addAdminRequest(login, hashedPassword, name, surname, phone, birthday);
     cout << "\nВаша заявка отправлена главному администратору на рассмотрение.\n";
     cout << "+---------------------------------------------------------------------------------+\n";
     cout << "|                               Подсказка                                         |\n";

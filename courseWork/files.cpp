@@ -80,13 +80,14 @@ void loadClientsFromFile(vector<Client> clients) {
         Master mast;
         Data birthday;
         string password = "";
+        string salt = "";
         bool flag = false;//флаг для считывания даты рождения
         bool flagService = false;//флаг для считывания услуги
         while (getline(file, line))
         {
             // если считаны все данные для клиента, добавляем его в вектор
             if (!login.empty() && !name.empty() && !surname.empty() && !phone.empty() && flag) {
-                Client client(login, password, name, surname, phone, birthday);
+                Client client(login, password, salt, name, surname, phone, birthday);
                 client.setLogin(login); // устанавливаем логин
                 client.setName(name); // устанавливаем имя
                 client.setSurname(surname); // устанавливаем фамилию
@@ -154,7 +155,7 @@ void writeLoginToFile(const string& login) {
     }
 }
 
-void saveUserCredentials(const string& login, const string& password) {
+/*void saveUserCredentials(const string& login, const string& password) {
     ofstream file("user_credentials.txt", ios::app); // файл с логинами и паролями пользователей
     if (file.is_open())
     {
@@ -165,7 +166,18 @@ void saveUserCredentials(const string& login, const string& password) {
     {
         cout << "Error opening a file for writing" << endl;
     }
+}*/
+void saveUserCredentials(const string& login, const string& hashedPassword, const string& salt) {
+    ofstream file("user_credentials.txt", ios::app);
+    if (file.is_open()) {
+        file << login << " " << hashedPassword << " " << salt << endl;
+        file.close();
+    }
+    else {
+        cout << "Error opening a file for writing" << endl;
+    }
 }
+
 void saveUserAppointment(const shared_ptr<Client>& client, const Service& selectedService, 
     const Data& appointmentDate, const Time& appointmentTime) {
     // Открываем файл для добавления записи
@@ -249,12 +261,12 @@ void updateClientFile(const shared_ptr<Client>& client, const Service& selectedS
     rename("temp_clients.txt", "clients.txt");
 }
 
-void saveAdminCredentials(const string& login, const string& password) {
+void saveAdminCredentials(const string& login, const string& hashedPassword, const string& salt) {
     ofstream file("admin_credentials.txt", ios::app); // файл с логинами и паролями админов
     if (file.is_open())
     {
         cout << "Заявка одобрена. Новый администратор добавлен." << endl;
-        file << endl << login << " " << password << endl; // записываем логин и пароль
+        file << login << " " << hashedPassword << " " << salt << endl;// записываем логин и пароль
         file.close();
     }
     else
@@ -263,6 +275,23 @@ void saveAdminCredentials(const string& login, const string& password) {
     }
 }
 
+void saveUserReview(const Client& client, const string& review, const Service& selectedService)//запись отзыва в файл
+{
+    ofstream file("user_reviews.txt", ios::app);
+    if (file.is_open())
+    {
+        file << "Логин: " << client.getLogin() << "\n";
+        file << "Услуга: " << selectedService.getName() << "\n";
+        file << "Мастер: " << selectedService.getMaster().getName() << " " << selectedService.getMaster().getSurname() << "\n";
+        file << "Отзыв: " << review << "\n";
+        file << "----------------------------------\n";
+        file.close();
+    }
+    else
+    {
+        cout << "Ошибка сохранения отзыва." << endl;
+    }
+}
 
 void saveClientsToFile(vector<Client> clients) {
     ofstream file("clients.txt");

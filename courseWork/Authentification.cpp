@@ -15,19 +15,19 @@ void firstUsing() {
     if (file.is_open()) {
         if (file.peek() == ifstream::traits_type::eof()) { 
             cout << "+--------------------------------------------------------------------------------------------+\n";
-            cout << "|                       Добро пожаловать, старший администратор                              |\n";
+            cout << "|                        Добрый день, уважаемый администратор!                               |\n";
             cout << "+--------------------------------------------------------------------------------------------+\n";
-            cout << "| In front of you is an information system for recording procedures in your cosmetic salon   |\n";
-            cout << "| Please log in to the program!                                                              |\n";
-            cout << "| We recommend that you memorize or write down your login and password,                      |\n";
-            cout << "| as you are the only one with the ability to assign roles to users.                         |\n";
+            cout << "| Перед вами информационная система учета женских процедур в вашем салоне красоты.           |\n";
+            cout << "| Пожалуйста, авторизуйтесь в программе.                                                     |\n";
+            cout << "| Рекомендуем запомнить или записать свой логин и пароль, т.к. только у вас есть возможность |\n";
+            cout << "| раздавать роли пользователям.                                                              |\n";
             cout << "+--------------------------------------------------------------------------------------------+\n";
 
-            cout << "Enter your login: ";
+            cout << "Введите логин: ";
             cin >> login;
             string password = getPassword();
             auto superAdmin = make_shared<SuperAdmin>(login, password, 001); 
-            Global::authSystem.registerAccount(superAdmin, login, password); 
+            Global::authSystem.registerSuperAdmin(login, password, 001); 
             writeLoginToFile(login);
             _getch();
             system("cls");
@@ -61,7 +61,7 @@ void Authentication::registerAccount(shared_ptr<Account> account, const string& 
         if (file.is_open()) {
             file << login << " " << password << endl;
             file.close();
-            cout << "SuperAdmin credentials have been saved. Please press to any key...\n";
+            cout << "\nSuperAdmin credentials have been saved. Please press to any key...\n";
         }
         else {
             cout << "Error opening file for writing SuperAdmin credentials.\n";
@@ -155,21 +155,21 @@ string getHiddenInput() {
 }
 
 string getPassword() {
-    cout << "\nEnter your password (min 6 characters): ";
+    cout << "\nВведите пароль (минимум 6 символов): ";
     string password = getHiddenInput();
     while (password.length() < 6) {
-        cout << "\nPassword too short. Please try again: ";
+        cout << "\nПароль слишком короткий. Пожалуйста, повторите снова: ";
         password = getHiddenInput();
     }
 
-    cout << "\nConfirm your password: ";
+    cout << "\nПодтвердите пароль: ";
     string confirmPassword = getHiddenInput();
     while (password != confirmPassword) {
-        cout << "\nPasswords do not match! Please try again: ";
+        cout << "\nПароли не совпадают! Пожалуйста, повторите снова: ";
         confirmPassword = getHiddenInput();
     }
 
-    cout << "\nPassword successfully set.\n";
+    
     return password;
 }
 
