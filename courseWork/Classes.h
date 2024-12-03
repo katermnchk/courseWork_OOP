@@ -207,13 +207,13 @@ namespace Role {
 	public:
 		Client() {}
 		Client(const string& login, const string& password)
-			: Account(login, password, "") {}
+			: Account(login, password, ""), name(""), surname(""), phone(""), birthday() {}
 		Client(const string& login, const string& password, const string& salt,
 			const string& name, const string& surname, const string& phone, const Data& birthday)
 			: Account(login, password, salt), name(name), surname(surname), phone(phone), birthday(birthday) {}
 
 		Client(const string& login, const string& password, const string& salt)
-			: Account(login, password, salt) {}
+			: Account(login, password, salt), name(""), surname(""), phone(""), birthday() {}
 
 		void showRole() const override {
 			cout << "I'm a client" << endl;
@@ -347,7 +347,7 @@ namespace Role {
 		void registerAccount(shared_ptr<Account> account, const string& login, const string& password);
 		void registerSuperAdmin(const string& login, const string& password, int adminID);
 
-		void approveAdminRegistration(const string& login, bool approve);
+		//void approveAdminRegistration(const string& login, bool approve);
 
 		int loginMenu();
 		int superAdminMenu(shared_ptr<SuperAdmin>& currentSuperAdmin);

@@ -40,8 +40,7 @@ void firstUsing() {
        
     }
     else {
-        cout << "Error opening file. Ensure it exists and is writable.\n";
-        //обработка ошибки
+        cout << "Ошибка открытия файла\n";
     }
 }
 
@@ -61,52 +60,52 @@ void Authentication::registerAccount(shared_ptr<Account> account, const string& 
         if (file.is_open()) {
             file << login << " " << password << endl;
             file.close();
-            cout << "\nSuperAdmin credentials have been saved. Please press to any key...\n";
+            cout << "\nСтарший администратор был успешно зарегистрирован. Пожалуйста, нажмите на любую клавишу для продолжения...\n";
         }
         else {
-            cout << "Error opening file for writing SuperAdmin credentials.\n";
+            cout << "Ошибка открытия файла\n";
         }
     }
     else if (dynamic_pointer_cast<Admin>(account)) {
         admins_to_approve.push_back(dynamic_pointer_cast<Admin>(account));
-        cout << "Admin registration requires approval\n";
+        cout << "Регистрация администратора требует одобрения\n";
     }
     else {
         accounts.push_back(account);
-        cout << "Account registered successfully.\n";
+        cout << "Аккаунт успешно зарегистрирован\n";
     }
 }
 
-void Authentication::approveAdminRegistration(const string& login, bool approve) {
+/*void Authentication::approveAdminRegistration(const string& login, bool approve) {
     for (auto it = admins_to_approve.begin(); it != admins_to_approve.end(); ++it) {
         if ((*it)->getLogin() == login) {
             if (approve) {
                 accounts.push_back(*it);
-                cout << "Admin approved and added to active accounts.\n";
+                cout << "Одобрено администратором и добавлено в активные аккаунты\n";
             }
             else {
-                cout << "Admin registration denied.\n";
+                cout << "Регистрация администратора отклонена\n";
             }
             admins_to_approve.erase(it);
             return;
         }
     }
-    cout << "Admin not found in approval list.\n";
-}
+    cout << "Администратор не найден в списке одобрений\n";
+}*/
 
 int Authentication::loginMenu() {
     string login, password;
     shared_ptr<Account> currentAccount;
      int choice;
     cout << "+-----------------------------------------------+\n";
-    cout << "|              Log in to the system              |\n";
+    cout << "|                ВХОД В СИСТЕМУ                 |\n";
     cout << "+-----------------------------------------------+\n";
-    cout << "|1 - Log in as a regular user                   |\n";
-    cout << "|2 - Log in as an administrator                 |\n";
-    cout << "|3 - Log in as super administrator              |\n";
-    cout << "|0 - Exit to the main menu                      |\n";
+    cout << "|1 - Войти как обычный пользователь             |\n";
+    cout << "|2 - Войти как администратор                    |\n";
+    cout << "|3 - Войти как старший администратор            |\n";
+    cout << "|0 - Выйти в главное меню                       |\n";
     cout << "+-----------------------------------------------+\n";
-    cout << "Your choice: ";
+    cout << "Ваш выбор: ";
     cin >> choice;
     choice = checkMenuChoice(choice, 0, 3);
     switch (choice) {
@@ -126,7 +125,7 @@ int Authentication::loginMenu() {
         return mainMenu();
         break;
     default:
-        cout << "Invalid choice.\n";
+        cout << "Неверный выбор\n";
     }
     cout << "\nНажмите на любую клавишу для продолжения...";
     _getch();

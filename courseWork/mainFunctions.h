@@ -26,8 +26,8 @@ bool isValidPhoneNumber(const string& phone);
 bool isAdult(const Data& birthday, int minAge);
 //void saveUserCredentials(const string& login, const string& password);
 void saveUserCredentials(const std::string& login, const std::string& hashedPassword, const std::string& salt);
-void saveUserAppointment(const shared_ptr<Client>& client, const Service& selectedService, const Data& appointmentDate, const Time& appointmentTime);
-void updateClientFile(const shared_ptr<Client>& client, const Service& selectedService, const Data& appointmentDate, const Time& appointmentTime);
+void saveUserAppointment(const Client& clientt, const Service& selectedService, const Data& appointmentDate, const Time& appointmentTime);
+void updateClientFile(const Client& client, const Service& selectedService, const Data& appointmentDate, const Time& appointmentTime);
 //void saveClientsToFile(const vector<Client>& clients);
 void saveUserReview(const Client& client, const string& review, const Service& selectedService);
 void saveAdminCredentials(const string& login, const string& hashedPassword, const string& salt);
@@ -70,3 +70,5 @@ void resetColor();
 
 string hashPassword(const string& password, const string& salt);
 string generateSalt(size_t length);
+
+Client findClientByLogin(const string& login, const vector<Client>& clients);

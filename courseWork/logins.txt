@@ -5,3 +5,6 @@ www
 as
 katya
 katya
+check
+test
+new

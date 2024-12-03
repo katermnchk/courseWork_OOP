@@ -279,15 +279,7 @@ void madeAppointment(shared_ptr<Client>& currentClient) {
         }
 
         currentClient->setAppointment(selectedService, chosenDate); // передаем услугу и дату
-        if (!currentClient) {
-            cout << "currentClient не инициализирован\n";
-        }
-        else {
-            cout << "currentClient инициализирован!\n";
-            cout << "\n" << currentClient->getName() << "\n";
-        }
-
-
+    
         // подтверждение записи
         cout << "---------------------------------------------\n";
         cout << "Вы успешно записаны на услугу: " << selectedService.getName() << endl;
@@ -296,7 +288,10 @@ void madeAppointment(shared_ptr<Client>& currentClient) {
         cout << "Время: " << chosenTime.getHour() << ":"
             << (chosenTime.getMinute() < 10 ? "0" : "") << chosenTime.getMinute() << endl;
         cout << "---------------------------------------------\n";
-        saveUserAppointment(currentClient, selectedService, chosenDate, chosenTime);
+        string login = currentClient->getLogin();
+        Client savedClient = findClientByLogin(login, Global::clients);
+        //saveUserAppointment(currentClient, selectedService, chosenDate, chosenTime);
+        saveUserAppointment(savedClient, selectedService, chosenDate, chosenTime);
 
         cout << "\n\nЖелаете ли вы принять участие в конкурсе и получить скидку на процедуру? (1 - да, 2 - нет)\nВаш выбор: ";
         int choice = 0;
@@ -556,8 +551,7 @@ void Client::viewProfile() {
     for (const auto& client : Global::clients)
     {
 
-        if (client.getLogin() == login)
-        {
+        if (client.getLogin() == login) {
             // вывод информации о пользователе
             printSeparator();
             cout << "|               ПРОФИЛЬ КЛИЕНТА             |\n";
@@ -565,14 +559,13 @@ void Client::viewProfile() {
             cout << "Логин: " << client.getLogin() << endl;
             cout << "Имя: " << client.getName() << endl;
             cout << "Фамилия: " << client.getSurname() << endl;
-            cout << "Номер телефона: " << client.getPhone() << endl;
+            cout << "Номер телефона: +" << client.getPhone() << endl;
             cout << "Дата рождения: " << client.getBirthday().toString() << endl;
             // проверка на наличие записи
             // поиск записи о процедуре в файле
             string line;
             bool found = false;
-            while (getline(appointmentsFile, line))
-            {
+            while (getline(appointmentsFile, line)) {
                 if (line.find("Логин: " + login) != string::npos)
                 {
                     // найдена запись 
@@ -581,7 +574,8 @@ void Client::viewProfile() {
                     cout << "\nИнформация о записи на процедуру:\n";
 
                     // извлечение даты и времени записи из следующих двух строк
-                    string date, time, service;
+                    string time, service;
+                    string date;
 
                     getline(appointmentsFile, line); // строка "Имя: ..."
                     getline(appointmentsFile, line); // строка "Фамилия: ..."
@@ -685,7 +679,6 @@ void participateInContest(shared_ptr<Client>& currentClient) {
     cout << "+-------------------------------------------+\n";
 }
 
-
 vector<Time> findAvailableTimes(const Data& chosenDate, const Service& selectedService, const vector<Shedule>& appointmentSlots) {
     vector<Time> availableTimes;
 
@@ -705,49 +698,6 @@ vector<Time> findAvailableTimes(const Data& chosenDate, const Service& selectedS
     }
     return availableTimes;
 }
-/*vector<Time> findAvailableTimes(const Data& chosenDate, const Service& selectedService, const vector<Shedule>& appointmentSlots) {
-    vector<Time> availableTimes;
-
-    for (int hour = 9; hour < 21; hour += 3) {
-        availableTimes.push_back({ hour, 0 });
-    }
-
-    for (const auto& appointment : appointmentSlots) {
-        if (appointment.appointmentDate == chosenDate &&
-            appointment.isBooked && appointment.selectedService.getName() == selectedService.getName()) {
-            Time bookedTime = appointment.appointmentTime;
-            auto it = find(availableTimes.begin(), availableTimes.end(), bookedTime);
-            if (it != availableTimes.end()) {
-                availableTimes.erase(it);
-            }
-        }
-    }
-
-    // Вывод всех временных слотов с выделением занятых серым
-    cout << "Доступные временные слоты:\n";
-    for (int hour = 9; hour < 21; hour += 3) {
-        Time currentTime = { hour, 0 };
-
-        auto it = find_if(appointmentSlots.begin(), appointmentSlots.end(), [&](const Shedule& appointment) {
-            return appointment.appointmentDate == chosenDate &&
-                appointment.selectedService.getName() == selectedService.getName() &&
-                appointment.appointmentTime == currentTime &&
-                appointment.isBooked;
-            });
-
-        if (it != appointmentSlots.end()) {
-            // Занятый временной слот
-            cout << GRAY_TEXT << hour << ":00 (занято)" << RESET_TEXT << endl;
-        }
-        else {
-            // Свободный временной слот
-            cout << hour << ":00 (свободно)" << endl;
-        }
-    }
-
-    return availableTimes;
-}*/ 
-
 
 Client findClientByLogin(const string& login, const vector<Client>& clients) //поиск инфо о клиенте по его логину
 {
@@ -779,54 +729,6 @@ string hashPassword(const string& password, const string& salt) {
     return to_string(hasher(password + salt));
 }
 
-/*int clientRegistration(const string& login, const string& password) {
-    string name, surname, phone;
-    Data birthday;
-
-    cout << "Введите ваше имя: ";
-    cin >> ws;
-    getline(cin, name);
-    cout << "Введите вашу фамилию: ";
-    getline(cin, surname);
-    cout << "Введите ваш номер телефона: +";
-    while (true) {
-        cin >> phone;
-        if (isValidPhoneNumber(phone)) {
-            break;
-        }
-        else {
-            cout << "Ошибка! Номер телефона должен состоять из 12 цифр. Повторите ввод еще раз: +";
-        }
-    }
-    cout << "Введите вашу дату рождения (dd mm yyyy): ";
-    while (true) {
-        cin >> birthday;
-        if (cin.fail() || !birthday.isValidDate()) {
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "Неверная дата. Пожалуйста повторите ввод (dd mm yyyy): ";
-        }
-        else if (!isAdult(birthday, 14)) {
-            cout << "К сожалению, регистрация доступна лицам старше 14 лет. Вы можете прийти к нам в сопровождении взрослого :)\n";
-            cout << "Пожалуйста, нажмите на любую кнопку для выхода...";
-            _getch();
-            system("cls");
-            return mainMenu();
-        }
-        else {
-            break;
-        }
-    }
-    Client newClient(login, password, name, surname, phone, birthday);
-    shared_ptr<Client> currentClient = make_shared<Client>(newClient);
-    Global::clients.push_back(newClient); 
-    saveUserCredentials(login, password);
-    saveClientsToFile(Global::clients);
-    cout << "Спасибо за регистрацию! Добро пожаловать, " << name << " " << surname << "!\n";
-    _getch();
-    system("cls");
-    return Global::authSystem.clientMenu(currentClient);
-}*/
 int clientRegistration(const string& login, const string& password) {
     string name, surname, phone;
     Data birthday;
@@ -879,7 +781,6 @@ int clientRegistration(const string& login, const string& password) {
     system("cls");
     return Global::authSystem.clientMenu(currentClient);
 }
-
 
 int authenticateClient() {
         cout << "+-----------------------------------------------+\n";

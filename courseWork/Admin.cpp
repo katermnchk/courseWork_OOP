@@ -271,13 +271,13 @@ void Admin::editService(vector<Service>& services)
 }
 
 void Admin::deleteService(vector<Service> services) {
-    int index;
+    int index = 0;
     cout << "+-----------------------------------------------+\n";
     cout << "|                 Удаление услуги               |\n";
     cout << "+-----------------------------------------------+\n";
     cout << "Введите номер услуги для удаления: ";
     cin >> index;
-    int choice;
+    int choice = 0;
     if (index >= 1 && index <= services.size())
     {
         cout << "-------------------------------------------------\n";
@@ -294,7 +294,7 @@ void Admin::deleteService(vector<Service> services) {
         }
         if (choice == 1)
         {
-            Global::services.erase(services.begin() + index - 1);//удаление из вектора
+            Global::services.erase(Global::services.begin() + index - 1);//удаление из вектора
             saveServicesToFile(Global::services);//перезапись данных в файле
             cout << "-------------------------------------------------\n";
             cout << "Услуга успешно удалена!\n";

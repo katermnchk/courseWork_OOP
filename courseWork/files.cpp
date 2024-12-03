@@ -92,7 +92,7 @@ void loadClientsFromFile(vector<Client> clients) {
                 client.setName(name); // устанавливаем имя
                 client.setSurname(surname); // устанавливаем фамилию
                 client.setPhone(phone); // устанавливаем номер телефона
-                //client.setBirthday(birthday);
+                client.setBirthday(birthday);
                 Global::clients.push_back(client);
 
                 // сбрасываем данные для следующего клиента
@@ -129,7 +129,7 @@ void loadClientsFromFile(vector<Client> clients) {
             else if (line.find("Дата рождения: ") != string::npos)
             {
                 int day, month, year;
-                sscanf_s(line.c_str(), "Дата рождения: %d %d %d", &day, &month, &year);
+                sscanf_s(line.c_str(), "Дата рождения: %d.%d.%d", &day, &month, &year);
                 birthday.setData(day, month, year);
                 flag = true;
             }
@@ -178,7 +178,7 @@ void saveUserCredentials(const string& login, const string& hashedPassword, cons
     }
 }
 
-void saveUserAppointment(const shared_ptr<Client>& client, const Service& selectedService, 
+void saveUserAppointment(const Client& client, const Service& selectedService,
     const Data& appointmentDate, const Time& appointmentTime) {
     // Открываем файл для добавления записи
     ofstream appointmentFile("user_appointments.txt", ios::app);
@@ -194,10 +194,10 @@ void saveUserAppointment(const shared_ptr<Client>& client, const Service& select
     }
 
     // Сохраняем запись в общий файл записей
-    appointmentFile << "Логин: " << client->getLogin() << "\n"
-        << "Имя: " << client->getName() << "\n"
-        << "Фамилия: " << client->getSurname() << "\n"
-        << "Номер телефона: " << client->getPhone() << "\n"
+    appointmentFile << "Логин: " << client.getLogin() << "\n"
+        << "Имя: " << client.getName() << "\n"
+        << "Фамилия: " << client.getSurname() << "\n"
+        << "Номер телефона: " << client.getPhone() << "\n"
         << "Услуга: " << selectedService.getName() << "\n"
         << "Мастер: " << selectedService.getMaster().getName() << " " << selectedService.getMaster().getSurname() << "\n"
         << "Дата: " << appointmentDate.getDay() << "/" << appointmentDate.getMonth() << "/" << appointmentDate.getYear() << "\n"
@@ -211,7 +211,7 @@ void saveUserAppointment(const shared_ptr<Client>& client, const Service& select
     // Обновляем основной файл клиентов
     updateClientFile(client, selectedService, appointmentDate, appointmentTime);
 }
-void updateClientFile(const shared_ptr<Client>& client, const Service& selectedService,
+void updateClientFile(const Client& client, const Service& selectedService,
     const Data& appointmentDate, const Time& appointmentTime) {
     ifstream clientFile("clients.txt");
     ofstream tempFile("temp_clients.txt");
@@ -222,7 +222,7 @@ void updateClientFile(const shared_ptr<Client>& client, const Service& selectedS
     }
 
     string line;
-    string login = client->getLogin();
+    string login = client.getLogin();
     bool found = false;
 
     while (getline(clientFile, line)) {
