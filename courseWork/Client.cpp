@@ -73,10 +73,11 @@ int Authentication::clientMenu(shared_ptr<Client>& currentClient) {
 }
 
 int displayServicesWithSort(shared_ptr<Client>& currentClient) {
-    cout << "\n---------------------------------------------";
-    cout << "\nЖелаете ли вы отсортировать список услуг?";
-    cout << "\n1 - да\n2 - нет";
-    cout << "\n---------------------------------------------";
+    cout << "\n+---------------------------------------------+";
+    cout << "\n|Желаете ли вы отсортировать список услуг?    |";
+    cout << "\n|1 - да                                       |";
+    cout << "\n|2 - нет                                      |";
+    cout << "\n+---------------------------------------------+";
     cout << endl << "Ваш выбор: ";
     int choiceDisp;
     cin >> choiceDisp;
@@ -147,10 +148,10 @@ void Client::showServices(const vector<Service>& services) {
     for (size_t i = 0; i < services.size(); ++i) {
         const auto& service = services[i];
         int discount = getDiscountFromFile(service.getName());
-        int originalPrice = (discount > 0) ? service.getPrice() * 100 / (100 - discount) : service.getPrice();
+        int originalPrice = (discount > 0) ? service.getOriginalPrice() * 100 / (100 - discount) : service.getOriginalPrice();
 
         //строки стоимости с двумя знаками после запятой
-        string priceCurrent = to_string(service.getPrice());
+        string priceCurrent = to_string(service.getOriginalPrice());
         priceCurrent = priceCurrent.substr(0, priceCurrent.find('.') + 3);
         priceCurrent += " BYN";
 
@@ -300,7 +301,7 @@ void madeAppointment(shared_ptr<Client>& currentClient) {
         if (choice == 1) {
             participateInContest(currentClient);
             if (currentClient->getDiscount() > 0) {
-                double finalPrice = selectedService.getPrice() * (1 - (currentClient->getDiscount() / 100));
+                double finalPrice = selectedService.getOriginalPrice() * (1 - (currentClient->getDiscount() / 100));
                 cout << "Стоимость услуги с учетом вашей скидки ("
                     << currentClient->getDiscount() << "%): "
                     << finalPrice << " BYN\n";
@@ -405,7 +406,7 @@ void Client::filterAndShowServices(double minPrice, double maxPrice, int minTime
 
     for (const auto& serv : Global::services) {
         if (isPriceFilter) {
-            if (serv.getPrice() >= minPrice && serv.getPrice() <= maxPrice) {
+            if (serv.getOriginalPrice() >= minPrice && serv.getOriginalPrice() <= maxPrice) {
                 filteredServices.push_back(serv);
             }
         }
@@ -452,12 +453,13 @@ void Client::searchService() {
 }
 
 void Client::editProfile() {
+    system("cls");
     printSeparator();
-    cout << "|             Меню редактирования             |\n";
+    cout << "|            Меню редактирования            |\n";
     printSeparator();
-    cout << "| 1 - Имя                                  |\n";
-    cout << "| 2 - Фамилия                              |\n";
-    cout << "| 3 - Дату рождения                        |\n";
+    cout << "| 1 - Изменить имя                          |\n";
+    cout << "| 2 - Изменить фамилию                      |\n";
+    cout << "| 3 - Изменить дату рождения                |\n";
     cout << "| 0 - Выход                                 |\n";
     printSeparator();
 
@@ -474,7 +476,7 @@ void Client::editProfile() {
     int choice;
 
     do {
-        cout << "Пожалуйста, введите цифру того, что вы хотите отредактировать: ";
+        cout << "\nПожалуйста, введите цифру того, что вы хотите отредактировать: ";
         cin >> choice;
 
         while (cin.fail() || choice < 0 || choice > 3) {
@@ -521,9 +523,7 @@ void Client::editProfile() {
             break;
         }
         case 0:
-            printSeparator();
-            cout << "Выход в меню клиента\n";
-            printSeparator();
+            system("cls");
             break;
         default:
             cout << "Неверный выбор\n";
@@ -531,16 +531,16 @@ void Client::editProfile() {
         }
 
         if (choice != 0) {
+            cout << "\n+-------------------------------------------+\n";
+            cout << "Профиль клиента успешно обновлен!\n";
+            cout << "+-------------------------------------------+\n";
             saveClientsToFile(Global::clients); // Сохранение изменений
         }
     } while (choice != 0);
-
-    cout << "+-------------------------------------------+\n";
-    cout << "Профиль клиента успешно обновлен!\n";
-    cout << "+-------------------------------------------+\n";
 }
 
 void Client::viewProfile() {
+    system("cls");
     ifstream appointmentsFile("user_appointments.txt");
     if (!appointmentsFile.is_open())
     {
@@ -553,6 +553,7 @@ void Client::viewProfile() {
 
         if (client.getLogin() == login) {
             // вывод информации о пользователе
+            cout << endl;
             printSeparator();
             cout << "|               ПРОФИЛЬ КЛИЕНТА             |\n";
             printSeparator();
@@ -565,13 +566,16 @@ void Client::viewProfile() {
             // поиск записи о процедуре в файле
             string line;
             bool found = false;
+           
+            cout << "\n=====Информация о записях на процедуры=====\n\n";
+            
             while (getline(appointmentsFile, line)) {
                 if (line.find("Логин: " + login) != string::npos)
                 {
                     // найдена запись 
                     found = true;
 
-                    cout << "\nИнформация о записи на процедуру:\n";
+                    
 
                     // извлечение даты и времени записи из следующих двух строк
                     string time, service;
@@ -591,8 +595,8 @@ void Client::viewProfile() {
                     time = line.substr(7); // извлекаем время
                     cout << "Дата и время записи: ";
                     cout << date << " в " << time << endl;
-
-                    break;
+                    cout << "=========================================\n";
+                    //break;
                 }
             }
 
@@ -602,6 +606,7 @@ void Client::viewProfile() {
             }
 
             appointmentsFile.close();
+            cout << endl;
             return;
         }
     }
@@ -611,13 +616,28 @@ void Client::viewProfile() {
 }
 
 void Client::leaveReview() {
-    if (appointments.empty()) {
+    ifstream appointmentsFile("user_appointments.txt");
+    if (!appointmentsFile.is_open())
+    {
+        cout << "Ошибка открытия файла с записями на процедуры\n";
+        return;
+    }
+    bool found = false;
+    string line;
+    while (getline(appointmentsFile, line)) {
+        if (line.find("Логин: " + login) != string::npos)
+        {
+            // найдена запись 
+            found = true;
+        }
+    }
+    if (!found) {
         cout << "К сожалению, вы не были записаны ни на одну процедуру, поэтому не можете оставить отзыв. " << 
             "Записаться на любую процедуру вы можете в личном кабинете. Ждем вас!\n";
         return;
     }
-
-    cout << "\n=== Отзыв ===\n";
+    system("cls");
+    cout << "\n             === Отзыв ===\n";
     cout << "Выберите процедуру, на которую вы хотите оставить отзыв:\n";
 
     for (size_t i = 0; i < appointments.size(); ++i) {
@@ -815,7 +835,7 @@ void sortByPrice() {
     {
         for (int j = 0; j < Global::services.size() - i - 1; ++j)
         {
-            if (Global::services[j].getPrice() > Global::services[j + 1].getPrice())
+            if (Global::services[j].getOriginalPrice() > Global::services[j + 1].getOriginalPrice())
             {
                 Service temp = Global::services[j];
                 Global::services[j] = Global::services[j + 1];

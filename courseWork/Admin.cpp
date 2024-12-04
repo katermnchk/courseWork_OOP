@@ -67,7 +67,7 @@ int Authentication::adminMenu(shared_ptr<Admin>& currentAdmin) {
 void Admin::addService(vector<Service> services) {
     string name, info, masterName, masterSurname;
     int price, duration;
-
+    system("cls");
     cout << "+-----------------------------------------------+\n";
     cout << "|                Добавление услуги              |\n";
     cout << "+-----------------------------------------------+\n";
@@ -109,9 +109,13 @@ void Admin::addService(vector<Service> services) {
     cout << "\n+-----------------------------------------------+\n";
     cout << "|            Услуга успешно добавлена!          |\n";
     cout << "+-----------------------------------------------+\n";
+    cout << "\nНажмите на любую кнопку для продожения...";
+    _getch();
+    system("cls");
 }
 
 void Admin::displayServices() {
+    system("cls");
     const int col1Width = 5;   // ширина для номера
     const int col2Width = 25; // ширина для названия
     const int col3Width = 35; // ширина для информации
@@ -126,10 +130,10 @@ void Admin::displayServices() {
     for (size_t i = 0; i < Global::services.size(); ++i) {
         const auto& service = Global::services[i];
         int discount = getDiscountFromFile(service.getName());
-        int originalPrice = (discount > 0) ? service.getPrice() * 100 / (100 - discount) : service.getPrice();
+        int originalPrice = (discount > 0) ? service.getOriginalPrice() * 100 / (100 - discount) : service.getOriginalPrice();
 
         // с двумя знаками после запятой
-        string priceCurrent = to_string(service.getPrice());
+        string priceCurrent = to_string(service.getOriginalPrice());
         priceCurrent = priceCurrent.substr(0, priceCurrent.find('.') + 3); 
         priceCurrent += " BYN";
 
@@ -165,17 +169,29 @@ void Admin::displayServices() {
 
         cout << "+-----+-------------------------+-----------------------------------+-------------------------+---------------+-----------------------------+" << endl;
     }
+    cout << "\n\nНажмите на любую кнопку для выхода...";
+    _getch();
+    system("cls");
 }
 
-void Admin::editService(vector<Service>& services)
-{
+void Admin::editService(vector<Service>& services) {
+    system("cls");
     cout << "+-----------------------------------------------+\n";
     cout << "|                 Изменение услуги              |\n";
     cout << "+-----------------------------------------------+\n";
     int index;
-    cout << "Введите номер услуги для изменения: ";
+    for (size_t i = 0; i < Global::services.size(); ++i) {
+        cout << i + 1 << ". " << Global::services[i].getName() << endl;
+    }
+    cout << "Введите номер услуги для изменения или нажмите 0 для выхода: ";
     cin >> index;
 
+    index = checkMenuChoice(index, 0, Global::services.size());
+    Client client;
+    vector<Service> foundServices;
+    foundServices.push_back(Global::services[index - 1]);
+    client.showServices(foundServices);
+    
     if (index >= 1 && index <= Global::services.size())
     {
         string newName, newInfo, newMasterName, newMasterSurname;
@@ -201,8 +217,7 @@ void Admin::editService(vector<Service>& services)
             cin >> choice;
         }
 
-        switch (choice)
-        {
+        switch (choice) {
         case 1:
             cout << "-----------------------------------------------\n";
             cout << "Введите новое название услуги: ";
@@ -228,7 +243,7 @@ void Admin::editService(vector<Service>& services)
                 cin.ignore(INT_MAX, '\n');
                 cin >> newPrice;
             }
-            Global::services[index - 1].setPrice(newPrice);
+            Global::services[index - 1].setOriginalPrice(newPrice);
             break;
         case 4:
             cout << "-----------------------------------------------\n";
@@ -250,12 +265,14 @@ void Admin::editService(vector<Service>& services)
             cout << "Введите новую фамилию мастера: ";
             cin >> newMasterSurname;
             Global::services[index - 1].setMaster(Master(newMasterName, newMasterSurname));
-
             break;
         default:
             cout << "-----------------------------------------------\n";
-            cout << "Изменение отменено\n";
+            cout << " Изменение отменено\n";
             cout << "-----------------------------------------------\n";
+            cout << "\nНажмите на любую кнопку для продолжения...";
+            _getch();
+            system("cls");
             return;
         }
 
@@ -264,19 +281,28 @@ void Admin::editService(vector<Service>& services)
         cout << "|              Услуга успешно изменена!       |\n";
         cout << "+---------------------------------------------+\n";
     }
-    else
-    {
+    else if (index == 0) {
+        system("cls");
+    }
+    else {
+        _getch();
         cout << "Неверный номер услуги\n";
+        system("cls");
     }
 }
 
 void Admin::deleteService(vector<Service> services) {
     int index = 0;
+    system("cls");
     cout << "+-----------------------------------------------+\n";
     cout << "|                 Удаление услуги               |\n";
     cout << "+-----------------------------------------------+\n";
-    cout << "Введите номер услуги для удаления: ";
+    for (size_t i = 0; i < Global::services.size(); ++i) {
+        cout << i + 1 << ". " << Global::services[i].getName() << endl;
+    }
+    cout << "Введите номер услуги для удаления или нажмите на 0 для выхода: ";
     cin >> index;
+    index = checkMenuChoice(index, 0, Global::services.size());
     int choice = 0;
     if (index >= 1 && index <= services.size())
     {
@@ -299,17 +325,27 @@ void Admin::deleteService(vector<Service> services) {
             cout << "-------------------------------------------------\n";
             cout << "Услуга успешно удалена!\n";
             cout << "-------------------------------------------------\n";
+            cout << "\nНажмите на любую кнопку для продолжения...";
+            _getch();
+            system("cls");
         }
         else
         {
             cout << "-------------------------------------------------\n";
             cout << "Удаление услуги отменено!\n";
             cout << "-------------------------------------------------\n";
+            cout << "\nНажмите на любую кнопку для продолжения...";
+            _getch();
+            system("cls");
         }
     }
-    else
-    {
+    else if (index == 0) {
+        system("cls");
+    }
+    else {
+        _getch();
         cout << "Неверный номер услуги\n";
+        system("cls");
     }
 }
 
@@ -317,7 +353,7 @@ void Admin::viewUserRecords() const {
     ifstream file("user_appointments.txt");
     ifstream winnersFile("contest_winners.txt");
     string line;
-
+    system("cls");
     cout << "+-----------------------------------------------+\n";
     cout << "|              Записи пользователей             |\n";
     cout << "+-----------------------------------------------+\n";
@@ -335,7 +371,7 @@ void Admin::viewUserRecords() const {
 
     // Чтение победителей конкурса
     cout << "\n+-----------------------------------------------+\n";
-    cout << "|           Победители конкурса                |\n";
+    cout << "|            Победители конкурса                |\n";
     cout << "+-----------------------------------------------+\n";
 
     if (winnersFile.is_open()) {
@@ -347,11 +383,15 @@ void Admin::viewUserRecords() const {
     else {
         cout << "Ошибка открытия файла с победителями конкурса" << endl;
     }
+    cout << "\n\nНажмите на любую кнопку для выхода...";
+    _getch();
+    system("cls");
 }
 
 
 void Admin::displayTopPopularServices(const vector<Client> clients) const
 {
+    system("cls");
     ifstream file("user_appointments.txt");
     string line;
     vector<ProcedureInfo> procedures;
@@ -405,10 +445,14 @@ void Admin::displayTopPopularServices(const vector<Client> clients) const
     else {
         cout << "Ошибка открытия файла с записями пользователей" << endl;
     }
+    cout << "\n\nНажмите на любую кнопку для выхода...";
+    _getch();
+    system("cls");
 }
 
-void Admin::viewReviews() const//показать отзывы пользователей
+void Admin::viewReviews() const//показать отзывы пользователей 
 {
+    system("cls");
     ifstream file("user_reviews.txt");
     string line;
     if (file.is_open()) {
@@ -424,9 +468,13 @@ void Admin::viewReviews() const//показать отзывы пользователей
     else {
         cout << "Ошибка открытия файла с отзывами пользователей." << endl;
     }
+    cout << "\n\nНажмите на любую кнопку для выхода...";
+    _getch();
+    system("cls");
 }
 
 void Admin::setDiscounts(vector<Service>& services) {
+    system("cls");
     cout << "+-----------------------------------------------+\n";
     cout << "|                 Установка скидок              |\n";
     cout << "+-----------------------------------------------+\n";
@@ -442,12 +490,12 @@ void Admin::setDiscounts(vector<Service>& services) {
     for (size_t i = 0; i < services.size(); ++i) {
         cout << "| " << setw(3) << left << i + 1 << " |"
             << setw(25) << left << services[i].getName() << "|"
-            << setw(6) << left << services[i].getPrice() << " BYN |\n";
+            << setw(6) << left << services[i].getOriginalPrice() << " BYN |\n";
     }
     cout << "+-----+-------------------------+----------+\n";
 
     int serviceIndex;
-    cout << "Введите номер услуги для установки скидки: ";
+    cout << "Введите номер услуги для установки/удаления скидки: ";
     cin >> serviceIndex;
     while (cin.fail() || serviceIndex < 1 || serviceIndex > services.size()) {
         cout << "Ошибка! Введите корректный номер услуги: ";
@@ -456,30 +504,56 @@ void Admin::setDiscounts(vector<Service>& services) {
         cin >> serviceIndex;
     }
 
-    int discount;
-    cout << "Введите размер скидки в процентах (от 1 до 100): ";
-    cin >> discount;
-    while (cin.fail() || discount < 1 || discount > 100) {
-        cout << "Ошибка! Введите корректное значение (от 1 до 100): ";
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cout << "1. Установить скидку\n";
+    cout << "2. Убрать скидку\n";
+    cout << "Выберите действие: ";
+    int action;
+    cin >> action;
+
+    if (action == 1) {
+        int discount;
+        cout << "Введите размер скидки в процентах (от 1 до 100): ";
         cin >> discount;
+        while (cin.fail() || discount < 1 || discount > 100) {
+            cout << "Ошибка! Введите корректное значение (от 1 до 100): ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cin >> discount;
+        }
+
+        int oldPrice = services[serviceIndex - 1].getOriginalPrice();
+        int newPrice = oldPrice - (oldPrice * discount / 100);
+        services[serviceIndex - 1].setOriginalPrice(oldPrice); // Сохраняем исходную стоимость
+        services[serviceIndex - 1].setPrice(newPrice);
+
+        saveServicesToFile(services);
+        saveDiscountToFile(services[serviceIndex - 1].getName(), discount);
+
+        cout << "\n+-----------------------------------------------+\n";
+        cout << "|        Скидка успешно установлена!            |\n";
+        cout << "+-----------------------------------------------+\n";
+        cout << "Новая цена услуги \"" << services[serviceIndex - 1].getName()
+            << "\": " << newPrice << " BYN (скидка " << discount << "%)\n";
+    }
+    else if (action == 2) {
+        services[serviceIndex - 1].resetPrice(); // Возвращаем исходную стоимость
+        removeDiscountFromFile(services[serviceIndex - 1].getName()); // Удаляем скидку из файла
+        saveServicesToFile(services);
+        cout << "\n+-----------------------------------------------+\n";
+        cout << "|        Скидка успешно удалена!                |\n";
+        cout << "+-----------------------------------------------+\n";
+        cout << "Цена услуги \"" << services[serviceIndex - 1].getName()
+            << "\" возвращена к исходной: " << services[serviceIndex - 1].getOriginalPrice() << " BYN\n";
+    }
+    else {
+        cout << "Ошибка! Неверное действие.\n";
     }
 
-    int oldPrice = services[serviceIndex - 1].getPrice();
-    int newPrice = oldPrice - (oldPrice * discount / 100);
-    services[serviceIndex - 1].setPrice(newPrice);
-
-    saveServicesToFile(services);
-    saveDiscountToFile(services[serviceIndex - 1].getName(), discount);
-
-
-    cout << "\n+-----------------------------------------------+\n";
-    cout << "|        Скидка успешно установлена!            |\n";
-    cout << "+-----------------------------------------------+\n";
-    cout << "Новая цена услуги \"" << services[serviceIndex - 1].getName()
-        << "\": " << newPrice << " BYN (скидка " << discount << "%)\n";
+    cout << "\n\nНажмите на любую кнопку для выхода...";
+    _getch();
+    system("cls");
 }
+
 
 int adminRegistration(const string& login, const string& password) {
     vector<Client> clients;
@@ -567,9 +641,6 @@ int authenticateAdmin() {
     }
    // return mainMenu();
 }
-
-
-
 
 void setColor(const string& colorCode) {
     cout << "\033[" << colorCode << "m"; // ANSI

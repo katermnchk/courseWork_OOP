@@ -122,6 +122,7 @@ int Authentication::loginMenu() {
         return authenticateSuperAdmin();
         break;
     case 0:
+        system("cls");
         return mainMenu();
         break;
     default:

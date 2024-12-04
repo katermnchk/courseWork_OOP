@@ -108,24 +108,28 @@ private:
 	string name;
 	string info;
 	double price;
+	double originalPrice;
 	int duration;
 	Master master;
 
 public:
-	Service(const string& name, const string& info, double price, int duration, const Master& master)
-		: name(name), info(info), price(price), duration(duration), master(master) {}
+	Service(const string& name, const string& info, double originalPrice, int duration, const Master& master)
+		: name(name), info(info), originalPrice(originalPrice), duration(duration), master(master) {}
 
 	string getName() const { return name; }
 	string getInfo() const { return info; }
 	double getPrice() const { return price; }
+	double getOriginalPrice() const { return originalPrice; }
 	int getDuration() const { return duration; }
 	Master getMaster() const { return master; }
 	void setName(const string& newName) { name = newName; }
 	void setInfo(const string& newInfo) { info = newInfo; }
 	void setPrice(double newPrice) { price = newPrice; }
+	void setOriginalPrice(double price) { originalPrice = price; }
 	void setDuration(int newDuration) { duration = newDuration; }
 	void setMaster(const Master& newMaster) { master = newMaster; }
 
+	void resetPrice() { price = originalPrice; }
 };
 
 class Appointment {

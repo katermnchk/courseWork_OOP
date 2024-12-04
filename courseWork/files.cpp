@@ -305,10 +305,10 @@ void saveClientsToFile(vector<Client> clients) {
             file << "\n";
         }
         file.close();
-        cout << "Clients have been successfully saved to a file" << endl;
+       // cout << "Clients have been successfully saved to a file" << endl;
     }
     else {
-        cerr << "Error opening a file for writing" << endl;
+        cerr << "Ошибка открытия файла" << endl;
     }
 }
 void saveServicesToFile(const vector<Service>& services) {
@@ -317,7 +317,7 @@ void saveServicesToFile(const vector<Service>& services) {
     {
         for (const auto& Service : services)
         {
-            file << Service.getName() << "," << Service.getInfo() << "," << Service.getPrice() << "," << Service.getDuration() << ","
+            file << Service.getName() << "," << Service.getInfo() << "," << Service.getOriginalPrice() << "," << Service.getDuration() << ","
                 << Service.getMaster().getName() << "," << Service.getMaster().getSurname() << endl;
         }
         file.close();
@@ -499,6 +499,43 @@ int getDiscountFromFile(const string& serviceName) {
     file.close();
     return 0; // Скидка не найдена
 }
+void removeDiscountFromFile(const string& serviceName) {
+    ifstream inputFile("discounts.txt");
+    if (!inputFile.is_open()) {
+        cerr << "Ошибка: не удалось открыть файл скидок для чтения.\n";
+        return;
+    }
+
+    ofstream tempFile("temp.txt");
+    if (!tempFile.is_open()) {
+        cerr << "Ошибка: не удалось создать временный файл.\n";
+        inputFile.close();
+        return;
+    }
+
+    string line;
+    bool found = false;
+    while (getline(inputFile, line)) {
+        if (line.find(serviceName) == string::npos) {
+            tempFile << line << '\n'; // Переписываем все строки, кроме той, что содержит название услуги
+        }
+        else {
+            found = true;
+        }
+    }
+
+    inputFile.close();
+    tempFile.close();
+
+    if (found) {
+        remove("discounts.txt");            // Удаляем оригинальный файл
+        rename("temp.txt", "discounts.txt"); // Переименовываем временный файл
+    }
+    else {
+        remove("temp.txt"); // Удаляем временный файл, если ничего не нашли
+    }
+}
+
 
 
 /*void loadServicesFromFile(vector<shared_ptr<Service>> services) {

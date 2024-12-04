@@ -72,3 +72,4 @@ string hashPassword(const string& password, const string& salt);
 string generateSalt(size_t length);
 
 Client findClientByLogin(const string& login, const vector<Client>& clients);
+void removeDiscountFromFile(const string& serviceName);
