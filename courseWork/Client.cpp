@@ -9,6 +9,8 @@
 #include <chrono>//для даты
 #include <ctime>
 #include <random>
+
+
 #define GRAY_TEXT "\033[90m"
 #define RESET_TEXT "\033[0m"
 
@@ -103,6 +105,7 @@ int displayServicesWithSort(shared_ptr<Client>& currentClient) {
         switch (sortChoice)
         {
         case 1:
+            system("cls");
             sortByPrice();
             cout << "\n+-------------------------------------------+\n";
             cout << "|Список услуг (отсортированный по цене)     |" << endl;
@@ -110,6 +113,7 @@ int displayServicesWithSort(shared_ptr<Client>& currentClient) {
             currentClient->showServices();
             break;
         case 2:
+            system("cls");
             sortByTime();
             cout << "\n+-------------------------------------------+\n";
             cout << "|Список услуг (сортировка по длительности)  |" << endl;
@@ -117,6 +121,7 @@ int displayServicesWithSort(shared_ptr<Client>& currentClient) {
             currentClient->showServices();
             break;
         case 3:
+            system("cls");
             sortByName();
             cout << "\n+---------------------------------------------+\n";
             cout << "|Список услуг (отсортированный по названию)   |" << endl;
@@ -124,7 +129,11 @@ int displayServicesWithSort(shared_ptr<Client>& currentClient) {
             currentClient->showServices();
             break;
         }
-        return Global::authSystem.clientMenu(currentClient);
+        cout << "Нажмите на любую кнопку для продолжения...";
+        _getch();
+        system("cls");
+        return 0;
+        //return Global::authSystem.clientMenu(currentClient);
     }
     case 2: currentClient->showServices();
         break;
@@ -158,7 +167,6 @@ void Client::showServices(const vector<Service>& services) {
         string priceOriginal = "";
         if (discount > 0) {
             string originalPriceStr = to_string(originalPrice);
-            // originalPriceStr = originalPriceStr.substr(0, originalPriceStr.find('.') + 3); 
             setColor("31"); // красный цвет для скидки
             priceOriginal = "(Было: " + originalPriceStr + " BYN, -" + to_string(discount) + "%)";  resetColor();
         }
@@ -192,7 +200,7 @@ void Client::showServices(const vector<Service>& services) {
 
 void madeAppointment(shared_ptr<Client>& currentClient) {
     while (true) {
-
+        system("cls");
         cout << "\n+-------------------------------------------+\n";
         cout << "|           Запись на процедуру             |\n";
         cout << "+-------------------------------------------+\n";
@@ -310,6 +318,9 @@ void madeAppointment(shared_ptr<Client>& currentClient) {
         else {
             cout << "Спасибо, что выбрали нас!\n";
         }
+        cout << "\nНажмите на любую кнопку для ппродолжения...";
+        _getch();
+        system("cls");
         return;
     }
 }
@@ -426,6 +437,7 @@ void Client::filterAndShowServices(double minPrice, double maxPrice, int minTime
 }
 
 void Client::searchService() {
+    system("cls");
     string searchQuery;
     cout << "\n+-------------------------------------------+\n";
     cout << "|               Поиск услуг                 |" << endl;
@@ -450,6 +462,10 @@ void Client::searchService() {
     else {
         showServices(foundServices);
     }
+    cout << "\nНажмите на любую кнопку для продолжения...";
+    _getch();
+    system("cls");
+
 }
 
 void Client::editProfile() {
@@ -574,9 +590,6 @@ void Client::viewProfile() {
                 {
                     // найдена запись 
                     found = true;
-
-                    
-
                     // извлечение даты и времени записи из следующих двух строк
                     string time, service;
                     string date;
@@ -693,7 +706,7 @@ void participateInContest(shared_ptr<Client>& currentClient) {
         }
     }
     else {
-        cout << "К сожалению, в этот раз вы не выиграли. Попробуйте снова!\n";
+        cout << "К сожалению, в этот раз вы не выиграли. В следующий раз попробуйте снова!\n";
     }
 
     cout << "+-------------------------------------------+\n";

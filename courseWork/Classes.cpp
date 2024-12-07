@@ -4,7 +4,6 @@
 
 istream& operator>>(istream& in, Data& data)
 {
-	//cout << "Enter date (dd mm yyyy): ";
 	in >> data.day >> data.month >> data.year;
 
 	while (!data.isValidDate()) {

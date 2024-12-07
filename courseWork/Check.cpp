@@ -79,34 +79,14 @@ bool isAdult(const Data& birthday, int minAge) {
     return age >= minAge;
 }
 
-/*shared_ptr<Client> checkUserCredentials(const string& login, const string& password) {
+shared_ptr<Client> checkUserCredentials(const string& login, const string& password) {
     ifstream file("user_credentials.txt");
-    string storedLogin, storedPassword;
-    shared_ptr<Client> authenticatedClient = nullptr;
-
-    if (file.is_open()) {
-        while (file >> storedLogin >> storedPassword) { 
-            if (storedLogin == login && storedPassword == password) {
-                authenticatedClient = make_shared<Client>(login, password); 
-                break;
-            }
-        }
-        file.close();
-    }
-    else {
-        cout << "Ошибка открытия файла для чтения." << endl;
-    }
-
-    return authenticatedClient;
-}*/
-std::shared_ptr<Client> checkUserCredentials(const std::string& login, const std::string& password) {
-    std::ifstream file("user_credentials.txt");
     shared_ptr<Client> authenticatedClient = nullptr;
     if (file.is_open()) {
-        std::string storedLogin, storedHash, storedSalt;
+        string storedLogin, storedHash, storedSalt;
         while (file >> storedLogin >> storedHash >> storedSalt) {
             if (storedLogin == login) {
-                std::string hashedPassword = hashPassword(password, storedSalt);
+                string hashedPassword = hashPassword(password, storedSalt);
                 if (hashedPassword == storedHash) {
                     //return findClientByLogin(login);
                     authenticatedClient = make_shared<Client>(login, password);
@@ -150,33 +130,6 @@ shared_ptr<Admin>  checkAdminCredentials(const string& login, const string& pass
 
     return authenticatedAdmin;
 }
-
-/*shared_ptr<Admin> checkAdminCredentials(const string& login, const string& password) {
-    ifstream file("admin_credentials.txt");
-    string storedLogin, storedHash, storedSalt;
-    shared_ptr<Admin> authenticatedAdmin = nullptr;
-
-    if (file.is_open()) {
-        while (file >> storedLogin >> storedHash >> storedSalt) {
-            if (storedLogin == login) {
-                // Хэширование введённого пароля с использованием соли
-                string hashedPassword = hashPassword(password, storedSalt);
-                if (hashedPassword == storedHash) {
-                    // Создаём объект администратора после успешной проверки
-                    authenticatedAdmin = make_shared<Admin>(login);
-                    break;
-                }
-            }
-        }
-        file.close();
-    }
-    else {
-        cout << "Ошибка открытия файла для чтения." << endl;
-    }
-
-    return authenticatedAdmin;
-}*/
-
 
 shared_ptr<SuperAdmin> checkSeniorAdminCredentials(const string& login, const string& password) {
     ifstream file("senior_admin_credentials.txt");
